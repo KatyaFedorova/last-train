@@ -70,14 +70,14 @@
 
 (defn valid?
   "Puzzle rules (game spec section 2, part 5): the true world fits the opening,
-  2-4 worlds remain with at least two Agent seats, one question cannot solve it
-  and two adaptive questions always can."
+  2-4 worlds remain, one question cannot solve it and two adaptive questions
+  always can. Not solvable in one also rules out a single Agent seat, since
+  solvable? is true once at most one Agent seat is left."
   [{:keys [true-world opening]}]
   (let [worlds (logic/consistent opening)]
     (boolean
       (and (some #{true-world} worlds)
            (<= 2 (count worlds) 4)
-           (<= 2 (count (logic/agent-seats worlds)))
            (not (logic/solvable? worlds 1))
            (logic/solvable? worlds 2)))))
 
