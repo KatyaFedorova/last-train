@@ -22,7 +22,15 @@ You can also accuse the Agent and optionally name the Awake ally:
 accuse A ally D
 ```
 
-The browser version is being added. Its expected game flow is specified in [`features/web-game-start.feature`](features/web-game-start.feature) and the related `features/web-game-*.feature` files.
+## Play in a browser
+
+Start the local web server, then open <http://localhost:8080/>:
+
+```sh
+bin/last-train-web
+```
+
+Use `--port 9000` to serve on another port. The page plays the same reference game: choose a passenger and type a yes or no question, or accuse a passenger and optionally name the Awake ally. Its game flow is specified in [`features/web-game-start.feature`](features/web-game-start.feature) and the related `features/web-game-*.feature` files.
 
 ## Development
 
