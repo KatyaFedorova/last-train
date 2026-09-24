@@ -11,6 +11,24 @@
 <body>
   <canvas id="rain" aria-hidden="true"></canvas>
   <main class="terminal">
+    <header class="bar">
+      <h1>LAST TRAIN</h1>
+      <button id="rules-toggle" type="button" aria-controls="rules" aria-expanded="false" title="Rules">?</button>
+    </header>
+    <section id="rules" hidden aria-label="Rules">
+      <p>Four passengers. <b>One Agent</b>, <b>one Awake</b> ally, <b>two Sleepers</b>. Find the Agent.</p>
+      <ul>
+        <li><b>Awake</b> always tells the truth.</li>
+        <li><b>Agent</b> always lies.</li>
+        <li><b>Sleeper</b> is honest but blind: answers as if everyone were a Sleeper. A Sleeper always says nobody is an Agent or Awake, and that any two people are the same kind.</li>
+      </ul>
+      <p>You have <b>3 yes/no questions</b>, then accuse.</p>
+      <pre>ask B Is D an Agent?
+ask C Are A and B the same kind?
+accuse A            accuse A ally D
+help                new</pre>
+      <p>Name passengers by seat (A&ndash;D) or by name. Score: 100 for the Agent + 50 for the ally + 25 per unused question.</p>
+    </section>
     <div id="transcript" role="log" aria-live="polite" aria-label="Transcript"></div>
     <form id="prompt" autocomplete="off">
       <span class="caret" aria-hidden="true">&gt;</span>

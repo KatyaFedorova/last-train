@@ -59,11 +59,32 @@
     (.addEventListener js/window "resize" resize!)
     (js/requestAnimationFrame frame)))
 
+(defn- show-rules! [open?]
+  (set! (.-hidden (el "rules")) (not open?))
+  (.setAttribute (el "rules-toggle") "aria-expanded" (str open?)))
+
+(defn- rules-seen? []
+  (try (= "yes" (.getItem js/localStorage "last-train-rules-seen"))
+       (catch :default _ false)))
+
+(defn- remember-rules-seen! []
+  (try (.setItem js/localStorage "last-train-rules-seen" "yes")
+       (catch :default _ nil)))
+
+(defn- start-rules! []
+  (show-rules! (not (rules-seen?)))
+  (remember-rules-seen!)
+  (.addEventListener (el "rules-toggle") "click"
+                     #(show-rules! (.-hidden (el "rules"))))
+  (.addEventListener js/document "keydown"
+                     #(when (= "Escape" (.-key %)) (show-rules! false))))
+
 (defn- init! []
   (let [params (js/URLSearchParams. (.-search js/location))]
     (reset! session (terminal/boot {:puzzle-param (.get params "puzzle") :rand-int rand-int}))
     (render! (:lines @session))
     (.addEventListener (el "prompt") "submit" submit!)
+    (start-rules!)
     (.focus (el "command"))
     (set! (.. js/document -body -dataset -ready) "true")
     (when-not (.-matches (js/matchMedia "(prefers-reduced-motion: reduce)"))
