@@ -1,5 +1,5 @@
 (ns last-train.cli
-  "Terminal adapter for the game."
+  "Command line options and the terminal game loop on *in* and *out*."
   (:require [last-train.game :as game]
             [last-train.puzzles :as puzzles]))
 
@@ -45,10 +45,3 @@
           (let [step (game/handle state line)]
             (print-lines (:output step))
             (recur (:state step))))))))
-
-(defn -main [& args]
-  (let [{:keys [error puzzle]} (parse-args args)]
-    (if error
-      (do (binding [*out* *err*] (println error))
-          (System/exit 2))
-      (play puzzle))))

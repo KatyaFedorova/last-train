@@ -1,7 +1,7 @@
 (ns last-train.english-property-spec
   (:require [speclj.core :refer :all]
             [clojure.string :as str]
-            [clojure.test.check :as tc]
+            [last-train.check :refer [passes?]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [last-train.english :as english]
@@ -22,11 +22,6 @@
   (gen/one-of [(gen/tuple g/literal gen/boolean)
                (gen/tuple (gen/tuple (gen/elements [:and :or]) inline-literal inline-literal)
                           (gen/return true))]))
-
-(defn- passes? [property]
-  (let [result (tc/quick-check 300 property)]
-    (when-not (:pass? result) (prn (:shrunk result)))
-    (:pass? result)))
 
 (defn- equivalent? [p q]
   (every? #(= (logic/evaluate p %) (logic/evaluate q %)) logic/all-worlds))

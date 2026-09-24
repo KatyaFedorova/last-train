@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src" "adapter"]
  :deps {speclj/speclj {:mvn/version "3.13.0"}}
  :tasks
  {spec {:doc "Run unit specs"

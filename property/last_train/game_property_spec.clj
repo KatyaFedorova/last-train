@@ -1,16 +1,11 @@
 (ns last-train.game-property-spec
   (:require [speclj.core :refer :all]
-            [clojure.test.check :as tc]
+            [last-train.check :refer [passes?]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [last-train.game :as game]
             [last-train.generators :as g]
             [last-train.puzzles :as puzzles]))
-
-(defn- passes? [property]
-  (let [result (tc/quick-check 300 property)]
-    (when-not (:pass? result) (prn (:shrunk result)))
-    (:pass? result)))
 
 (defn- states [lines]
   (reductions (fn [state line] (:state (game/handle state line)))
