@@ -1,9 +1,11 @@
 (ns last-train.cli
   "Command line options and the terminal game loop on *in* and *out*."
-  (:require [last-train.game :as game]
+  (:require [clojure.string :as str]
+            [last-train.game :as game]
             [last-train.puzzles :as puzzles]))
 
-(def ^:private seeds {"reference" puzzles/reference})
+(defn- seed-names []
+  (concat (map :name puzzles/catalog) ["random"]))
 (def ^:private voices #{"template"})
 
 (defn- options [args]
@@ -18,15 +20,19 @@
           {:error (str "Unknown option: " arg)}))
       opts)))
 
-(defn parse-args [args]
-  (let [opts (options args)
-        seed (get opts "seed" "reference")
-        voice (get opts "voices" "template")]
-    (cond
-      (:error opts) opts
-      (not (seeds seed)) {:error (str "Unknown seed: " seed ". Supported: reference")}
-      (not (voices voice)) {:error (str "Unknown voices: " voice ". Supported: template")}
-      :else {:puzzle (seeds seed) :voices voice})))
+(defn parse-args
+  "Puzzle and voices chosen by args; rand-int picks the random seed's puzzle."
+  ([args] (parse-args args rand-int))
+  ([args rand-int]
+   (let [opts (options args)
+         seed (get opts "seed" "reference")
+         voice (get opts "voices" "template")]
+     (cond
+       (:error opts) opts
+       (not (some #{seed} (seed-names)))
+       {:error (str "Unknown seed: " seed ". Supported: " (str/join ", " (seed-names)))}
+       (not (voices voice)) {:error (str "Unknown voices: " voice ". Supported: template")}
+       :else {:puzzle (or (puzzles/by-name seed) (puzzles/pick rand-int nil)) :voices voice}))))
 
 (defn- print-lines [lines]
   (doseq [line lines] (println line))

@@ -89,6 +89,18 @@
       (should= 2 (:round state))
       (should= 3 (:questions-left state))))
 
+  (it "shows the command syntax after an unrecognised command"
+    (let [{:keys [state last]} (play "hello")]
+      (should= ["Operator: \"Signal's noisy. Rephrase.\""
+                "Questions left: 3"
+                "Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]"]
+               last)
+      (should= (:state initial-game) state)))
+
+  (it "does not repeat the syntax for an unsupported question"
+    (should= ["Operator: \"Signal's noisy. Rephrase.\"" "Questions left: 3"]
+             (:last (play "ask B what is love?"))))
+
   (it "rejects questions to unknown passengers or in unknown forms"
     (should-contain "Operator: \"Signal's noisy. Rephrase.\"" (:last (play "ask Neo is D an Agent?")))
     (should-contain "Operator: \"Signal's noisy. Rephrase.\"" (:last (play "ask B is D an Agent and is C awake?")))))

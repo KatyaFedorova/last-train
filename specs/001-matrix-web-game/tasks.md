@@ -59,14 +59,14 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 ### 3a — Unrecognised command shows the syntax (shared core change)
 
-- [ ] T010 [US1] In `spec/last_train/game_spec.clj`, add these Speclj examples:
+- [X] T010 [US1] In `spec/last_train/game_spec.clj`, add these Speclj examples:
   - `(game/handle state "hello")` returns the state unchanged, with output `["Operator: \"Signal's noisy. Rephrase.\"" "Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]"]`.
   - `(game/handle state "ask B what is love?")` still returns `["Operator: \"Signal's noisy. Rephrase.\"" "Questions left: 3"]` (unchanged).
-- [ ] T011 [US1] Implement it in `src/last_train/game.cljc`: in `handle`, the final fallback branch (input that matches neither `accuse` nor `ask`) returns the noisy line plus the syntax line. Pull the syntax string out into one private def and reuse it in `round-banner`. `bb spec` and `bb acceptance` stay green, including `features/cli-invalid-question.feature`.
+- [X] T011 [US1] Implement it in `src/last_train/game.cljc`: in `handle`, the final fallback branch (input that matches neither `accuse` nor `ask`) returns the noisy line plus the syntax line. Pull the syntax string out into one private def and reuse it in `round-banner`. `bb spec` and `bb acceptance` stay green, including `features/cli-invalid-question.feature`.
 
 ### 3b — Pure terminal session (`last-train.terminal`)
 
-- [ ] T012 [P] [US1] Write `spec/last_train/terminal_spec.clj` (Speclj) for the contract in `data-model.md` § Terminal session and `contracts/player-commands.md` § Web-only commands. Pass a deterministic `rand-int` stub. Cover:
+- [X] T012 [P] [US1] Write `spec/last_train/terminal_spec.clj` (Speclj) for the contract in `data-model.md` § Terminal session and `contracts/player-commands.md` § Web-only commands. Pass a deterministic `rand-int` stub. Cover:
   - `boot` with `:puzzle-param "reference"`: `:lines` begin with `LAST TRAIN` and the four reference opening lines, and include `Questions left: 3`.
   - `boot` with `"nope"`: the first line is `Unknown puzzle "nope". Boarding a random train.` with kind `:system`, then a game starts.
   - `boot` with `nil`: a random puzzle is used.
@@ -76,11 +76,11 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - `submit "help"`: adds the syntax line, and the game state is unchanged.
   - Line kinds: lines starting `Operator:` are `:operator`; `<Name> (<Seat>): "…"` lines are `:passenger`; lines containing `WIN`, `LOSE`, `PERFECT RUN`, `Score:` or `GAME OVER` are `:outcome`; everything else is `:system`.
   - No line's text contains the words `true-world`, `:agent`, `:awake` or `:sleeper` before game over (FR-003).
-- [ ] T013 [US1] Implement `src/last_train/terminal.cljc` (namespace `last-train.terminal`) with `boot`, `submit` and `prompt-enabled?` as in `data-model.md`. It must call `game/start`, `game/handle`, `puzzles/by-name` and `puzzles/pick`, and must not re-implement any game rule (constitution: IO-near modules don't reimplement domain questions). Until T023 lands, `pick` may only return `reference`. Keep the `new`-yields-a-different-puzzle examples of T012 marked `(pending)` until T025.
+- [X] T013 [US1] Implement `src/last_train/terminal.cljc` (namespace `last-train.terminal`) with `boot`, `submit` and `prompt-enabled?` as in `data-model.md`. It must call `game/start`, `game/handle`, `puzzles/by-name` and `puzzles/pick`, and must not re-implement any game rule (constitution: IO-near modules don't reimplement domain questions). Until T023 lands, `pick` may only return `reference`. Keep the `new`-yields-a-different-puzzle examples of T012 marked `(pending)` until T025.
 
 ### 3c — Static page (DOM glue, untestable boundary kept thin)
 
-- [ ] T014 [P] [US1] Create `web/index.html` following `contracts/web-page.md`:
+- [X] T014 [P] [US1] Create `web/index.html` following `contracts/web-page.md`:
   - `<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">` and `<title>LAST TRAIN</title>`.
   - `<link rel="stylesheet" href="terminal.css">`.
   - `<canvas id="rain" aria-hidden="true">`.
@@ -90,7 +90,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - Scittle `<script src>` pinned to the version from T009.
   - `<script type="application/x-scittle" src=…>` tags in this order: `last_train/logic.cljc`, `last_train/english.cljc`, `last_train/game.cljc`, `last_train/puzzles.cljc`, `last_train/terminal.cljc`, `terminal.cljs`.
   - All paths relative, with no leading `/`.
-- [ ] T015 [P] [US1] Create `web/terminal.css`:
+- [X] T015 [P] [US1] Create `web/terminal.css`:
   - `:root{--bg:#000;--fg:#33ff66;--dim:#1fae4a}`. Body background `var(--bg)`, colour `var(--fg)`, with a monospace stack `"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace`.
   - Layout: `height:100dvh` grid with the transcript (`overflow-y:auto; white-space:pre-wrap; overflow-wrap:anywhere`) above a prompt row that stays in view.
   - `max-width:60rem`, centred, `padding:16px`.
@@ -99,7 +99,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - The `#rain` canvas is fixed behind everything at `opacity:.18`.
   - `@media (prefers-reduced-motion: reduce){#rain{display:none} *{animation:none!important}}`.
   - Check that there is no horizontal scroll at 360px.
-- [ ] T016 [US1] Create `web/terminal.cljs`, the DOM glue only (no game rules):
+- [X] T016 [US1] Create `web/terminal.cljs`, the DOM glue only (no game rules):
   - On load, read `?puzzle=` from `js/location.search` and call `terminal/boot` with `{:puzzle-param … :rand-int rand-int}`.
   - Render every `:lines` entry as a `div.line.<kind>`, with its text set through `textContent` and never `innerHTML`, then scroll the transcript to the bottom.
   - On form submit, prevent the default, send the trimmed value to `terminal/submit`, append only the new lines, clear the input and focus it again.
@@ -108,20 +108,20 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 ### 3d — Local site build and serve (replaces the server page)
 
-- [ ] T017 [US1] Create `adapter/last_train/site.clj` (namespace `last-train.site`):
+- [X] T017 [US1] Create `adapter/last_train/site.clj` (namespace `last-train.site`):
   - `build!` cleans `build/site/`, copies `web/*` there, and copies `src/last_train/{logic,english,game,puzzles,terminal}.cljc` to `build/site/last_train/`.
   - `serve!` takes a port, calls `build!`, then `babashka.http-server/exec` on `build/site`.
   - `-main` parses `[--port N]` (default 8080, same validation messages as the old `web/parse-args`: `Unknown option: x`, `Missing value for --port`, `Bad port: x`) and exits with code 2 on error.
   - Add `bb.edn` tasks `site` (runs `build!`) and `serve` (runs `-main`).
-- [ ] T018 [US1] Rewrite `bin/last-train-web` to run `exec bb -m last-train.site "$@"` (or the `serve` task). Delete the server-rendered page and everything tied to it:
+- [X] T018 [US1] Rewrite `bin/last-train-web` to run `exec bb -m last-train.site "$@"` (or the `serve` task). Delete the server-rendered page and everything tied to it:
   - `git rm src/last_train/web.clj adapter/last_train/web_main.clj spec/last_train/web_spec.clj property/last_train/web_property_spec.clj hardening/last_train/web_hardening_spec.clj .metrics/mutate/last_train/web.edn`
   - Remove any `bb.edn` task that referenced them.
   - Grep for leftover `last-train.web` requires and fix them.
 
 ### 3e — Browser acceptance steps (FR-016)
 
-- [ ] T019 [US1] In `acceptance/src/last_train/acceptance/web_steps.clj`, add a `page-html` helper that calls `last-train.site/build!` once per run and slurps `build/site/index.html`. No browser, no server, no chromedriver.
-- [ ] T020 [US1] Rewrite `acceptance/src/last_train/acceptance/web_steps.clj` to drive `last-train.terminal` directly: `terminal/boot` and `terminal/submit`, the same functions `web/terminal.cljs` calls. Keep the same public fns used by `steps.clj`: `open-game`, `lines`, `new-lines`, `accuse`, `check-over`, `live-worlds`, `handlers`.
+- [X] T019 [US1] In `acceptance/src/last_train/acceptance/web_steps.clj`, add a `page-html` helper that calls `last-train.site/build!` once per run and slurps `build/site/index.html`. No browser, no server, no chromedriver.
+- [X] T020 [US1] Rewrite `acceptance/src/last_train/acceptance/web_steps.clj` to drive `last-train.terminal` directly: `terminal/boot` and `terminal/submit`, the same functions `web/terminal.cljs` calls. Keep the same public fns used by `steps.clj`: `open-game`, `lines`, `new-lines`, `accuse`, `check-over`, `live-worlds`, `handlers`.
   - `open-game` → `(terminal/boot {:puzzle-param "reference" :rand-int (constantly 0)})`, stored under `:web`.
   - Ask/accuse submit `ask <seat> <question>` / `accuse <seat>[ ally <seat>]`.
   - "I enter X as a question for passenger B" submits `ask B X`.
@@ -130,11 +130,11 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - "I do not see the passengers' true roles" checks that no transcript line and no part of `page-html` contains `:agent`, `:awake`, `:sleeper` or `true-world`.
   - `live-worlds` reads `[:web :game :live-worlds]`.
   - Remove the HTML form parsing and the `java.net.URLEncoder` import.
-- [ ] T021 [US1] Update the wording of `features/web-game-start.feature` only where a step implies dropdowns, so it describes typed commands, e.g. `And I can type a question for a chosen passenger at the prompt`. Keep scenario names and headers. Update the matching regexes in `web_steps.clj`. Run `bb acceptance`: all 5 `web-game-*` features pass, and every other feature stays green.
+- [X] T021 [US1] Update the wording of `features/web-game-start.feature` only where a step implies dropdowns, so it describes typed commands, e.g. `And I can type a question for a chosen passenger at the prompt`. Keep scenario names and headers. Update the matching regexes in `web_steps.clj`. Run `bb acceptance`: all 5 `web-game-*` features pass, and every other feature stays green.
 
 ### 3f — Puzzle catalog (FR-007…007c)
 
-- [ ] T022 [P] [US1] Write `spec/last_train/puzzles_spec.clj` (Speclj):
+- [X] T022 [P] [US1] Write `spec/last_train/puzzles_spec.clj` (Speclj):
   - `catalog` has at least 5 puzzles with unique `:name`s, and includes `"reference"`.
   - `(by-name "reference")` returns the existing reference puzzle, with the same `:true-world`, `:personas` and `:opening` as before.
   - For each puzzle, `(valid? p)` is true.
@@ -142,27 +142,27 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - Persona names are distinct within each puzzle and none is `a`–`d`, `i`, `me` or `you`, compared case-insensitively.
   - The true worlds differ across the catalog, and at least 3 different Agent seats appear.
   - `(pick rand-int "reference")` never returns `"reference"` (check with 50 stubbed draws), and `(pick rand-int nil)` can return any puzzle.
-- [ ] T023 [US1] In `src/last_train/puzzles.cljc`:
+- [X] T023 [US1] In `src/last_train/puzzles.cljc`:
   - Add `:name "reference"` to `reference`.
   - Add `valid?`, implementing exactly: the true world is in `W = (logic/consistent opening)`, `2 ≤ |W| ≤ 4`, `(count (logic/agent-seats W)) ≥ 2`, `(not (logic/solvable? W 1))` and `(logic/solvable? W 2)`.
   - Add `catalog`, `by-name` and `pick`.
-- [ ] T024 [US1] Create `adapter/last_train/puzzle_search.clj` (dev-only; add a `bb.edn` task `puzzle-search`).
+- [X] T024 [US1] Create `adapter/last_train/puzzle_search.clj` (dev-only; add a `bb.edn` task `puzzle-search`).
   - For a given true world, enumerate candidate opening sets. Each set has one statement per seat, drawn from `[:is s r]`, `[:not [:is s r]]`, `[:same x y]`, `[:not [:same x y]]` and `[:count-eq :agent 0]`, filtered to statements the speaker can say (`logic/can-say?`).
   - Print the first 10 sets that pass `puzzles/valid?`, using the English from `english/render-statement`.
   - Run it for 4 true worlds with the Agent in different seats from the reference puzzle's (A), e.g. Agent B/Awake C, Agent C/Awake A, Agent D/Awake B, Agent B/Awake D.
-- [ ] T025 [US1] Add 4 puzzles to `catalog` in `src/last_train/puzzles.cljc`, named `commuters`, `night-shift`, `terminus` and `red-eye`, each built from T024 output.
+- [X] T025 [US1] Add 4 puzzles to `catalog` in `src/last_train/puzzles.cljc`, named `commuters`, `night-shift`, `terminus` and `red-eye`, each built from T024 output.
   - Give each 4 new persona names and one-line bios in the Matrix late-train tone. Persona names must be unique within each puzzle.
   - T022 must pass.
   - Then un-pend the `new`-gives-a-different-puzzle examples in `spec/last_train/terminal_spec.clj`.
-- [ ] T026 [US1] Write `features/puzzle-catalog.feature` (a new APS feature file with no mutation header; the tools add it):
+- [X] T026 [US1] Write `features/puzzle-catalog.feature` (a new APS feature file with no mutation header; the tools add it):
   - A Scenario Outline "Puzzle catalog 01 - every named puzzle follows the puzzle rules", with Examples of the 5 names, and steps `Given the puzzle named "<name>"`, `Then the puzzle follows the puzzle rules`.
   - A Scenario "Puzzle catalog 02 - a new game never repeats the puzzle just played": `Given I just played the puzzle named "reference"`, `When a new game picks a puzzle`, `Then it is not "reference"`.
   - Add the step handlers to `acceptance/src/last_train/acceptance/engine_steps.clj`.
-- [ ] T027 [US1] In `src/last_train/cli.clj`:
+- [X] T027 [US1] In `src/last_train/cli.clj`:
   - `seeds` becomes every name in `puzzles/catalog`, plus `"random"`, which uses `puzzles/pick` with `rand-int`. The default stays `"reference"`.
   - The error message becomes `Unknown seed: <x>. Supported: reference, commuters, night-shift, terminus, red-eye, random`.
   - Update `spec/last_train/cli_spec.clj`. Per `contracts/cli.md`, a bad seed exits with code 2 through `adapter/last_train/main.clj`, which is unchanged.
-- [ ] T028 [US1] Write `features/web-game-terminal.feature`:
+- [X] T028 [US1] Write `features/web-game-terminal.feature`:
   - "Web game terminal 01 - an unrecognised command shows the command syntax": open the reference game, type `hello`, see `Signal's noisy. Rephrase.`, see `accuse <passenger> [ally <passenger>]`, 3 questions remain.
   - "Web game terminal 02 - new starts a different puzzle": open the reference game, accuse D, type `new`, the opening statements are not the reference ones, and 3 questions remain.
   - "Web game terminal 03 - an unknown puzzle link boards a random train": open the page with puzzle `nope`, see `Unknown puzzle "nope". Boarding a random train.`, and 3 questions remain.

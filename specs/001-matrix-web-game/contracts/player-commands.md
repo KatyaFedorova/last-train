@@ -9,7 +9,7 @@ The grammar is the same on both surfaces. It is case-insensitive, and leading an
 | `ask …` with 0 questions left | `Operator: "No more questions. Accuse the Agent."` | no |
 | `accuse <p>` | Win (`WIN`) or loss (`LOSE`), then `Score: n` and `GAME OVER` | — |
 | `accuse <p> ally <p>` | Same as above, with `PERFECT RUN` if the ally is also right | — |
-| anything else (**new**) | The noisy line, then the syntax line `Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]` | no |
+| anything else (**new**) | The noisy line, `Questions left: n`, then the syntax line `Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]` | no |
 
 Supported questions (`english/parse-question`):
 - `Is <p> an Agent|Awake|a Sleeper?`

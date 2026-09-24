@@ -55,7 +55,7 @@ Functions (all pure):
   - `help` shows the command syntax.
   - Anything else is passed to `game/handle`.
   - After game over, it adds `Type "new" to play again.`
-- `(prompt-enabled? session)`: always true, because `new` is valid after game over.
+- There is no `prompt-enabled?`: the prompt is always on, because `new` is valid after game over.
 
 ## Seat, Role, Proposition
 

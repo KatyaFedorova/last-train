@@ -29,5 +29,14 @@
                             :extra-paths ["acceptance/src"]
                             :requires ([last-train.acceptance.runner-worker])
                             :task (last-train.acceptance.runner-worker/-main)}
+  site {:doc "Build the static site into build/site/"
+        :requires ([last-train.site])
+        :task (last-train.site/build!)}
+  serve {:doc "Build and serve the site locally: bb serve [--port N]"
+         :requires ([last-train.site])
+         :task (apply last-train.site/-main *command-line-args*)}
+  puzzle-search {:doc "bb puzzle-search <agent-seat> <awake-seat> [limit]: find openings that follow the puzzle rules"
+                 :requires ([last-train.puzzle-search])
+                 :task (apply last-train.puzzle-search/-main *command-line-args*)}
   acceptance {:doc "Parse features, generate entry points, run acceptance tests"
               :task (shell "bin/acceptance")}}}

@@ -9,6 +9,8 @@
 
 (def ^:private noisy "Operator: \"Signal's noisy. Rephrase.\"")
 
+(def syntax "Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]")
+
 (defn- english-context
   "English context for the puzzle's personas, with self as I/me/you when given."
   ([state] (english-context state nil))
@@ -21,7 +23,7 @@
   (cond-> [(str "Round " round " - " (round-titles round))]
     (= 3 round) (conj "A black cat walks past. Then it walks past again.")
     (< round 5) (conj (str "Questions left: " questions-left)
-                      "Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]")
+                      syntax)
     (= 5 round) (conj "Accuse the Agent: accuse <passenger> [ally <passenger>]")))
 
 (defn- boarding-lines [state]
@@ -93,4 +95,4 @@
           (if (zero? (:questions-left state))
             {:state state :output ["Operator: \"No more questions. Accuse the Agent.\""]}
             (ask state (find-seat state target) question))
-          (reject state))))))
+          (update (reject state) :output conj syntax))))))

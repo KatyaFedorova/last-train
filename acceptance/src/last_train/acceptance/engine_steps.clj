@@ -3,7 +3,8 @@
   (:require [clojure.string :as str]
             [last-train.acceptance.runtime :refer [check]]
             [last-train.english :as english]
-            [last-train.logic :as logic]))
+            [last-train.logic :as logic]
+            [last-train.puzzles :as puzzles]))
 
 (def reference-statements
   "The reference opening statements, as written in the reference-puzzle feature."
@@ -157,8 +158,29 @@
     (check (= 3 (count (:worlds world))) "Reference opening did not leave three worlds")
     world))
 
+(defn- named-puzzle [world name]
+  (let [puzzle (puzzles/by-name name)]
+    (check puzzle (str "No puzzle named " (pr-str name)))
+    (assoc world :puzzle puzzle)))
+
+(defn- check-puzzle-rules [world]
+  (check (puzzles/valid? (:puzzle world)) (str (pr-str (:name (:puzzle world))) " breaks the puzzle rules"))
+  world)
+
+(defn- pick-next [world]
+  (let [draws (range (count puzzles/catalog))]
+    (assoc world :picked (set (map #(:name (puzzles/pick (fn [n] (mod % n)) (:name (:puzzle world)))) draws)))))
+
+(defn- check-not-picked [world name]
+  (check (not (contains? (:picked world) name)) (str "A new game can pick " (pr-str name) " again"))
+  world)
+
 (def handlers
-  [[#"^the (?:true )?passenger world is A=([^,\s]+), B=([^,\s]+), C=([^,\s]+), D=([^,\s]+)$" set-passenger-world]
+  [[#"^(?:the|I just played the) puzzle named \"(.+)\"$" named-puzzle]
+   [#"^the puzzle follows the puzzle rules$" check-puzzle-rules]
+   [#"^a new game picks a puzzle$" pick-next]
+   [#"^it is not \"(.+)\"$" check-not-picked]
+   [#"^the (?:true )?passenger world is A=([^,\s]+), B=([^,\s]+), C=([^,\s]+), D=([^,\s]+)$" set-passenger-world]
    [#"^the world has exactly (\d+) Agent, (\d+) Awake passenger, and (\d+) Sleepers$" check-composition]
    [#"^the (\d+) possible passenger worlds$" all-worlds]
    [#"^the answer is (\S+)$" check-answer]

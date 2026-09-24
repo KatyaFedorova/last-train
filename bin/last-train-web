@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 # Play LAST TRAIN in a browser: bin/last-train-web [--port 8080], then open http://localhost:8080/
-cd "$(dirname "$0")/.." && exec bb -m last-train.web-main "$@"
+# Builds the static site (the same files GitHub Pages serves) into build/site/ and serves it.
+cd "$(dirname "$0")/.." && exec bb -m last-train.site "$@"

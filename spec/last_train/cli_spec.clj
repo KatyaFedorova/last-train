@@ -14,6 +14,18 @@
   (it "defaults to the reference puzzle and template voices"
     (should= {:puzzle puzzles/reference :voices "template"} (cli/parse-args [])))
 
+  (it "loads any catalog puzzle by name"
+    (doseq [{:keys [name] :as puzzle} puzzles/catalog]
+      (should= {:puzzle puzzle :voices "template"} (cli/parse-args ["--seed" name]))))
+
+  (it "picks a random puzzle for the random seed"
+    (should= {:puzzle (puzzles/pick (constantly 2) nil) :voices "template"}
+             (cli/parse-args ["--seed" "random"] (constantly 2))))
+
+  (it "names every supported seed when the seed is unknown"
+    (should= {:error "Unknown seed: 42. Supported: reference, commuters, night-shift, terminus, red-eye, random"}
+             (cli/parse-args ["--seed" "42"])))
+
   (it "reports unsupported seeds, voices and options"
     (should-contain :error (cli/parse-args ["--seed" "42"]))
     (should-contain :error (cli/parse-args ["--voices=llm"]))

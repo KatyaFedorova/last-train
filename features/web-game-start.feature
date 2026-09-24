@@ -10,5 +10,5 @@ Feature: Web game start
     Then I see the four passenger opening statements
     And I see that 3 questions remain
     And I do not see the passengers' true roles
-    And I can choose a passenger and enter a yes-or-no question
-    And I can accuse a passenger and optionally name an ally
+    And I can type a question for a chosen passenger at the prompt
+    And I can type an accusation with an optional ally at the prompt

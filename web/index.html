@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+  <meta name="description" content="LAST TRAIN: find the Agent on the last train through the Matrix.">
+  <meta name="color-scheme" content="dark">
+  <title>LAST TRAIN</title>
+  <link rel="stylesheet" href="terminal.css">
+</head>
+<body>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <main class="terminal">
+    <div id="transcript" role="log" aria-live="polite" aria-label="Transcript"></div>
+    <form id="prompt" autocomplete="off">
+      <span class="caret" aria-hidden="true">&gt;</span>
+      <input id="command" type="text" aria-label="Command"
+             autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
+             enterkeyhint="send" placeholder="ask B Is D an Agent?">
+    </form>
+    <noscript><p class="line system">LAST TRAIN needs JavaScript enabled.</p></noscript>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/scittle@0.8.33/dist/scittle.js"></script>
+  <script type="application/x-scittle" src="last_train/logic.cljc"></script>
+  <script type="application/x-scittle" src="last_train/english.cljc"></script>
+  <script type="application/x-scittle" src="last_train/game.cljc"></script>
+  <script type="application/x-scittle" src="last_train/puzzles.cljc"></script>
+  <script type="application/x-scittle" src="last_train/terminal.cljc"></script>
+  <script type="application/x-scittle" src="terminal.cljs"></script>
+</body>
+</html>
