@@ -1,0 +1,69 @@
+name: Verify and publish to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  APS_HOME: ${{ github.workspace }}/../aps
+  APS_COMMIT: accaa33d503340c56513ef387258f8da929ba902
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: turtlequeue/setup-babashka@v1.7.0
+        with:
+          babashka-version: 1.13.224
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Fetch the Acceptance Pipeline tools
+        run: |
+          git clone https://github.com/unclebob/Acceptance-Pipeline-Specification "$APS_HOME"
+          git -C "$APS_HOME" checkout --quiet "$APS_COMMIT"
+
+      - name: Unit specs
+        run: bb spec
+
+      - name: Acceptance tests (includes the ClojureScript smoke check)
+        run: bb acceptance
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: turtlequeue/setup-babashka@v1.7.0
+        with:
+          babashka-version: 1.13.224
+
+      - name: Build the static site
+        run: bb site
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: build/site
+
+      - id: deployment
+        uses: actions/deploy-pages@v5
