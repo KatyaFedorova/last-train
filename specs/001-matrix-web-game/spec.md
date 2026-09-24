@@ -100,7 +100,7 @@ A developer runs one documented command and gets a pass/fail result for every `.
 - **FR-005**: Unsupported or malformed questions MUST be rejected with "Signal's noisy. Rephrase." and cost no question.
 - **FR-006**: The page MUST show a win ("PERFECT RUN" when the ally is also correct), a loss ("LOSE"), the final score, and a game-over state. It MUST then offer a new game without a page reload.
 - **FR-007**: The game MUST include at least 5 fixed puzzles, including the existing reference puzzle. Each new game MUST pick one at random, and a replay MUST NOT give the same puzzle twice in a row.
-- **FR-007a**: Every puzzle MUST have exactly one consistent assignment of Agent and Awake ally, given the opening statements, and MUST be solvable within the 3-question limit. This MUST be checked automatically for every puzzle.
+- **FR-007a**: Every puzzle MUST meet the game design's puzzle rules (`docs/LAST_TRAIN_game_spec.md` §2.5), and this MUST be checked automatically for every puzzle. The rules: the true world is consistent with the opening statements; 2-4 worlds remain consistent; those worlds contain at least 2 different Agent seats (so the puzzle isn't solved at boarding); it is not solvable with 1 question; and it is solvable with at most 2 adaptive questions.
 - **FR-007b**: A player or test MUST be able to start a specific puzzle directly (for example, the reference puzzle through a shareable link), so the committed reference-game scenarios stay repeatable.
 - **FR-007c**: The terminal game MUST offer the same puzzle set (by name, and at random), so the web and terminal versions stay equivalent.
 - **FR-008**: Passenger dialogue MUST use the existing template voices. The page MUST NOT need any AI service, API key, or network call after it loads.
@@ -141,7 +141,7 @@ A developer runs one documented command and gets a pass/fail result for every `.
 - **SC-004**: A full game (up to 3 questions plus an accusation) can be finished in under 8 minutes, as the game design intends.
 - **SC-005**: The page is fully playable (by typing commands) at 360px, 768px and 1440px widths, with no horizontal scrolling and all text at AA contrast.
 - **SC-006**: A change merged to main appears on the published site within 10 minutes, with no manual steps.
-- **SC-007**: 100% of shipped puzzles pass the automatic check for exactly one solution. Across 10 consecutive new games, at least 3 different puzzles appear.
+- **SC-007**: 100% of shipped puzzles pass the automatic puzzle-rules check (FR-007a). Across 10 consecutive new games, at least 3 different puzzles appear.
 
 ## Assumptions
 
