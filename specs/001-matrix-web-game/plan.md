@@ -11,18 +11,18 @@ The terminal game works: 86 unit specs and all 56 acceptance scenarios pass. Swa
 - The four core namespaces become portable `.cljc`, so the same rules run in Babashka (CLI and tests) and in the browser through **Scittle**.
 - A pure `last-train.terminal` session drives a static Matrix-style page: black background, green monospace text, typed commands only.
 - Four new validated puzzles are added, and the page picks one at random.
-- Web acceptance steps drive real headless Chrome through **etaoin**.
+- Web acceptance steps call the pure `terminal` session functions directly, the same ones the page calls. There's no browser automation (user decision).
 - A GitHub Actions workflow verifies everything, then publishes to Pages.
 
 ## Technical Context
 
 **Language/Version**: Clojure through Babashka (bb ≥ 1.12) for the CLI and tests; ClojureScript interpreted by Scittle (pinned exact version) in the browser; the shared code is `.cljc`.
 
-**Primary Dependencies**: Scittle (from the CDN), speclj 3.13 (existing), etaoin (test only), babashka.http-server (local serving), and the APS Babashka tools (`gherkin-parser`).
+**Primary Dependencies**: Scittle (from the CDN), speclj 3.13 (existing), babashka.http-server (local serving), and the APS Babashka tools (`gherkin-parser`).
 
 **Storage**: none. The session lives in page memory only.
 
-**Testing**: Speclj unit specs (`bb spec`), APS Gherkin acceptance (`bb acceptance`) with browser steps through etaoin + chromedriver, and property tests (`bb property`, kept separate).
+**Testing**: Speclj unit specs (`bb spec`), APS Gherkin acceptance (`bb acceptance`) with web steps calling `terminal` session functions directly, and property tests (`bb property`, kept separate).
 
 **Target Platform**: static site on GitHub Pages; current Chrome, Firefox, Safari and Edge on desktop and mobile.
 
@@ -84,8 +84,7 @@ web/
 spec/last_train/
 ├── puzzles_spec.clj  terminal_spec.clj  (NEW)   web_spec.clj (DELETED)
 acceptance/src/last_train/acceptance/
-├── web_steps.clj     # REWRITTEN: etaoin + headless Chrome against local server
-└── browser.clj       # NEW: start/stop chromedriver + static server per run
+└── web_steps.clj     # REWRITTEN: calls terminal/boot + submit; checks built index.html
 features/
 ├── puzzle-catalog.feature        # NEW: every named puzzle is valid; random pick differs
 ├── web-game-terminal.feature     # NEW: new game, unknown command, puzzle link, unknown puzzle
@@ -108,4 +107,4 @@ bin/last-train-web    # serve static site
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|--------------------------------------|
-| Test-only browser dependency (etaoin + chromedriver) | FR-016 needs real-browser checks | HTML-string checks can't see what Scittle renders |
+| none | — | — |

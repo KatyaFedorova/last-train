@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Babashka (`bb`), Google Chrome, and chromedriver (`brew install chromedriver`).
+- Babashka (`bb`), and any browser for manual play.
 - The APS tools, either at `.swarmforge/tools/Acceptance-Pipeline-Specification` or cloned elsewhere with `APS_HOME` pointing to them.
 - **SwarmForge stopped**, so nothing else commits to `main` while you validate.
 
@@ -20,7 +20,7 @@ Expected: 0 failures. This includes `puzzles_spec` (every catalog puzzle passes 
 bb acceptance
 ```
 
-Expected: every scenario in every `features/*.feature` passes. That's the 56 existing scenarios plus the new catalog and web-terminal scenarios. The web scenarios drive headless Chrome against a local static server.
+Expected: every scenario in every `features/*.feature` passes. That's the 56 existing scenarios plus the new catalog and web-terminal scenarios. The web scenarios call the page's session functions directly, with no browser.
 
 ## 3. Play locally
 

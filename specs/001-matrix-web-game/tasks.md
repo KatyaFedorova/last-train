@@ -33,7 +33,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 - [ ] T001 Confirm SwarmForge is stopped. `ps aux | grep -E "SwarmForge (Coder|Refactorer)|handoffd.bb" | grep -v grep` must print nothing. If it prints anything, STOP and ask the user to stop SwarmForge. Then `git pull --ff-only` on `main`.
 - [ ] T002 Make `bin/acceptance` resolve the parser in this order (research R4): (1) `gherkin-parser` on PATH; (2) `bb --config "$APS_HOME/bb.edn" gherkin-parser`, where `APS_HOME` defaults to `.swarmforge/tools/Acceptance-Pipeline-Specification`; (3) otherwise exit 1 with a message naming both options and the clone URL `https://github.com/unclebob/Acceptance-Pipeline-Specification`. Write the IR to `build/acceptance/ir/` as it does now.
 - [ ] T003 Run `bb acceptance`. Expect **56 examples, 0 failures**, the baseline recorded in research.md. Save the tail of the output in the commit message for T002.
-- [ ] T004 [P] Add `etaoin/etaoin` (latest release on Clojars) and `org.babashka/http-server` (latest) to `:deps` in `bb.edn`. Run `bb -e "(require 'etaoin.api 'babashka.http-server)"` to confirm both load in Babashka.
+- [ ] T004 [P] Add `org.babashka/http-server` (latest) to `:deps` in `bb.edn`. Run `bb -e "(require 'babashka.http-server)"` to confirm it loads. Do NOT add etaoin; there are no browser tests.
 - [ ] T005 [P] Create the `web/` directory (static page sources) with a `.gitkeep`. Confirm that `build/` is still listed in `.gitignore`.
 
 ---
@@ -45,7 +45,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 - [ ] T006 `git mv` these files to `.cljc`, keeping the namespace names: `src/last_train/logic.clj` → `logic.cljc`, `english.clj` → `english.cljc`, `game.clj` → `game.cljc`, `puzzles.clj` → `puzzles.cljc`. Leave `cli.clj` as it is. Run `bb spec` and `bb acceptance`; both stay green.
 - [ ] T007 In `src/last_train/english.cljc`, replace `java.util.regex.Pattern/quote` inside `alternation` with a reader conditional: `#?(:clj (java.util.regex.Pattern/quote w) :cljs (clojure.string/replace w #"[.*+?^${}()|\[\]\\]" "\\$&"))`. Add a Speclj example in `spec/last_train/english_spec.clj` asserting that a persona name containing a dot (`"Mr. Grey"`) still resolves through `resolve-seat` and `seat-pattern`.
 - [ ] T008 Grep `src/last_train/*.cljc` for other JVM-only forms (`java.`, `Long/`, `Integer/`, `format`, `.getBytes`, `Math/`) and wrap each one in `#?(:clj … :cljs …)`. If none are found, record that in the commit message.
-- [ ] T009 Browser smoke check, done once by hand and scripted in `adapter/last_train/site.clj` later. Create a throwaway `build/smoke/index.html` that loads Scittle from `https://cdn.jsdelivr.net/npm/scittle@<latest>/dist/scittle.js` and the four `.cljc` files through `<script type="application/x-scittle" src=…>`, in order `logic → english → game → puzzles`. Its inline script prints `(:output (last-train.game/start last-train.puzzles/reference))` to the console. Serve it with `bb -e "(babashka.http-server/exec {:dir \"build\" :port 8099})"`, open it in Chrome, and check that the output matches `bin/last-train --seed reference` (first 12 lines). Pin the Scittle version you used in `research.md` R1. If `parse-long`, `update-vals` or the `(?i)` regex prefix fail under Scittle, fix them with reader conditionals in the `.cljc` files and add a Speclj example for each.
+- [ ] T009 Check the ClojureScript side without a browser. Use **nbb** (SCI on Node, the same interpreter as Scittle, with the same `:cljs` reader branch): add `bin/cljs-smoke`, which runs `npx --yes nbb@latest -cp src -e "(require '[last-train.game :as g] '[last-train.puzzles :as p]) (run! println (:output (g/start p/reference)))"`. Its output must equal the first 12 lines of `bin/last-train --seed reference </dev/null`. Also run `(g/handle state "ASK B Is D an Agent?")` to check that the `(?i)` regex works. If `parse-long`, `update-vals` or `(?i)` fail, fix them with reader conditionals in the `.cljc` files. Pin the Scittle version (latest on npm) in `research.md` R1. Add `bin/cljs-smoke` to `bb acceptance`'s preflight when `npx` is available, and print a skip notice otherwise.
 
 **Checkpoint**: `bb spec` and `bb acceptance` are green, and the core runs unchanged in the browser.
 
@@ -120,20 +120,17 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 ### 3e — Browser acceptance steps (FR-016)
 
-- [ ] T019 [US1] Create `acceptance/src/last_train/acceptance/browser.clj`:
-  - It lazily starts, once per acceptance run, a static server with `last-train.site/build!` then `babashka.http-server/exec` on a free port, in a future, and a headless Chrome through `etaoin.api/chrome-headless`.
-  - It registers a JVM shutdown hook to quit the driver.
-  - Public fns: `(open! query-string)` navigates to `http://localhost:<port>/<query>` and waits for `body[data-ready=true]` for up to 10 s; `(type-command! text)` fills `#command` and presses Enter; `(lines)` returns a vector of the `textContent` of `#transcript .line`; `(page-html)`.
-  - If chromedriver is missing, throw `ex-info` with the text `chromedriver not found: brew install chromedriver`.
-- [ ] T020 [US1] Rewrite `acceptance/src/last_train/acceptance/web_steps.clj` against `browser.clj`, keeping the same public fns used by `steps.clj`: `open-game`, `lines`, `new-lines`, `accuse`, `check-over`, `live-worlds`, `handlers`.
-  - `open-game` → `(browser/open! "?puzzle=reference")`.
-  - Ask/accuse type `ask <seat> <question>` / `accuse <seat>[ ally <seat>]` into the prompt.
-  - "I enter X as a question for passenger B" types `ask B X`.
-  - "I can choose a passenger and enter a yes-or-no question" / "I can accuse a passenger and optionally name an ally" check that `#command` exists, is enabled, and that the transcript shows the syntax line containing `ask <passenger> <question>` and `accuse <passenger> [ally <passenger>]`.
-  - "I do not see the passengers' true roles" checks that `(page-html)` contains none of `:agent`, `:awake`, `:sleeper` or `true-world`.
-  - `live-worlds` must not read the page, because roles are hidden. Record the commands typed in `world` and replay them with `game/start` and `game/handle` on `puzzles/reference` to get `:live-worlds`.
-  - Remove the old HTML form parsing and the `java.net.URLEncoder` import.
-- [ ] T021 [US1] Update the wording of `features/web-game-start.feature` only where a step implies dropdowns, so it describes typed commands, e.g. `And I can type a question for a chosen passenger at the prompt`. Keep scenario names and headers. Update the matching regexes in `web_steps.clj`. Run `bb acceptance`: all 5 `web-game-*` features pass in headless Chrome, and every other feature stays green.
+- [ ] T019 [US1] In `acceptance/src/last_train/acceptance/web_steps.clj`, add a `page-html` helper that calls `last-train.site/build!` once per run and slurps `build/site/index.html`. No browser, no server, no chromedriver.
+- [ ] T020 [US1] Rewrite `acceptance/src/last_train/acceptance/web_steps.clj` to drive `last-train.terminal` directly: `terminal/boot` and `terminal/submit`, the same functions `web/terminal.cljs` calls. Keep the same public fns used by `steps.clj`: `open-game`, `lines`, `new-lines`, `accuse`, `check-over`, `live-worlds`, `handlers`.
+  - `open-game` → `(terminal/boot {:puzzle-param "reference" :rand-int (constantly 0)})`, stored under `:web`.
+  - Ask/accuse submit `ask <seat> <question>` / `accuse <seat>[ ally <seat>]`.
+  - "I enter X as a question for passenger B" submits `ask B X`.
+  - `lines` returns the `:text` of every session line that isn't a `:player` line.
+  - The prompt/accuse capability steps check that `page-html` contains `id="command"` and that the transcript has the syntax line containing `ask <passenger> <question>` and `accuse <passenger> [ally <passenger>]`.
+  - "I do not see the passengers' true roles" checks that no transcript line and no part of `page-html` contains `:agent`, `:awake`, `:sleeper` or `true-world`.
+  - `live-worlds` reads `[:web :game :live-worlds]`.
+  - Remove the HTML form parsing and the `java.net.URLEncoder` import.
+- [ ] T021 [US1] Update the wording of `features/web-game-start.feature` only where a step implies dropdowns, so it describes typed commands, e.g. `And I can type a question for a chosen passenger at the prompt`. Keep scenario names and headers. Update the matching regexes in `web_steps.clj`. Run `bb acceptance`: all 5 `web-game-*` features pass, and every other feature stays green.
 
 ### 3f — Puzzle catalog (FR-007…007c)
 
@@ -188,14 +185,11 @@ description: "Task list for Matrix Web Game on GitHub Pages"
     - `actions/checkout@v4`.
     - Install Babashka with `turtlequeue/setup-babashka@v1.7.0` (or the current maintained action), pinned to the same bb version as local `bb --version`.
     - Run `git clone --depth 1 https://github.com/unclebob/Acceptance-Pipeline-Specification "$RUNNER_TEMP/aps"`, with `APS_HOME` set to that path.
-    - Run `bb spec`, then `bb acceptance`. The runner already has Chrome and chromedriver; export `CHROMEDRIVER_PATH` if etaoin needs it.
+    - Run `bb spec`, then `bb acceptance`.
   - Job `deploy` (`needs: verify`, `environment: github-pages`): `bb site`, then `actions/configure-pages@v5`, `actions/upload-pages-artifact@v3` with `path: build/site`, and `actions/deploy-pages@v4`.
 - [ ] T030 [US2] Enable Pages with the Actions source: `gh api -X POST repos/KatyaFedorova/last-train/pages -f build_type=workflow`. If it already exists, use `gh api -X PUT … -f build_type=workflow`. Then run `gh api repos/KatyaFedorova/last-train/pages -q .html_url` and confirm it prints `https://katyafedorova.github.io/last-train/`.
 - [ ] T031 [US2] Push to `main` and run `gh run watch --exit-status`. If `verify` fails in CI but passes locally, fix the environment difference in the workflow, not the tests.
-- [ ] T032 [US2] Smoke-test the live site with headless Chrome (reuse the `browser.clj` fns with a base-URL override, or a one-off `bb` script).
-  - `https://katyafedorova.github.io/last-train/?puzzle=reference` must reach `data-ready`, and `ask B Is D an Agent?` then `accuse A ally D` must show `PERFECT RUN`.
-  - At a 360×740 window, `document.documentElement.scrollWidth <= 360`.
-  - Record the result in the commit or PR.
+- [ ] T032 [US2] Check the live site over HTTP, with no browser: `curl -fsS` must return 200 for `https://katyafedorova.github.io/last-train/`, `terminal.css`, `terminal.cljs` and each `last_train/*.cljc`. The HTML must contain `id="command"`, and the Scittle script URL must return 200. Record the results in the commit message.
 
 **Checkpoint**: the public URL plays the game, and pushes redeploy automatically.
 
@@ -211,7 +205,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 - [ ] T034 [US3] Rewrite `README.md`:
   - Replace the "Play in a browser" section with: the public URL; how to play locally (`bin/last-train-web` → `http://localhost:8080/`, and `?puzzle=<name>`); the commands `ask`, `accuse`, `new` and `help`.
   - Terminal: the `--seed` names and `random`.
-  - Development: prerequisites (bb, Chrome, `brew install chromedriver`, APS clone and `APS_HOME`), then `bb spec`, `bb acceptance`, `bb property`, `bb puzzle-search`.
+  - Development: prerequisites (bb, APS clone and `APS_HOME`), then `bb spec`, `bb acceptance`, `bb property`, `bb puzzle-search`.
   - Deployment: this is automatic on push to `main`, through `.github/workflows/pages.yml`.
   - Remove any mention of the server-rendered page.
 - [ ] T035 [US3] Do a clean-checkout verification in the scratch directory: clone the repo, set `APS_HOME`, run `bb spec && bb acceptance`, and paste the final counts into the PR or commit message.
@@ -251,6 +245,6 @@ Phase 6:      T036 ‖ T037
 
 ## Implementation Strategy
 
-- **MVP = through T021**: the reference puzzle playable in the Matrix browser terminal, verified in Chrome. Stop and demo here if time is short.
+- **MVP = through T021**: the reference puzzle playable in the Matrix browser terminal, verified through the session functions. Stop and demo here if time is short.
 - Then T022–T028 for replay variety, and US2 to go public. US3 and Polish harden it for the long term.
 - The SwarmForge `last-train-matrix-game` card stays "done". This work runs through Spec Kit (`/speckit-implement`), not the swarm.

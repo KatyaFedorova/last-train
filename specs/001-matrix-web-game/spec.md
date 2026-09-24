@@ -120,7 +120,7 @@ A developer runs one documented command and gets a pass/fail result for every `.
 **Verification and docs**
 
 - **FR-015**: A single documented command MUST run every scenario in `features/`, the terminal and web ones, and report pass/fail. It MUST work without the SwarmForge tool wrappers.
-- **FR-016**: The web scenarios MUST check what the player actually sees in a real browser, not only the underlying game logic.
+- **FR-016**: The web scenarios MUST drive the same session functions the page calls (command in, transcript lines out), and MUST check the published page's structure (prompt, transcript, no hidden roles). Real-browser automation is out of scope (decided 2026-09-25).
 - **FR-017**: Existing unit specs (66 examples) and terminal behavior MUST keep passing unchanged.
 - **FR-018**: The README MUST explain how to play in the terminal, play in the browser locally, run all tests, and reach the published game. It MUST also replace the "The browser version is being added" note.
 

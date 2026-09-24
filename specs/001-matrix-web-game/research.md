@@ -34,9 +34,10 @@
 - **Rationale**: the constitution requires testable logic to be separate from environment-bound code. The DOM glue stays tiny, and everything else is spec'd in Babashka.
 - **Colors**: text is `#33ff66` on `#000`, a contrast ratio of about 15:1, which is well above AA (FR-011). Dim text is `#1fae4a`, about 7:1.
 
-## R3 — Browser-level acceptance (FR-016)
+## R3 — Web acceptance (FR-016) — REVISED 2026-09-25: no browser automation
 
-- **Decision**: **etaoin**, run from Babashka, drives headless Chrome through chromedriver. The `web_steps.clj` step handlers are rewritten to:
+- **Superseded decision (kept for history)**: etaoin, run from Babashka, drives headless Chrome through chromedriver.
+- **Current decision (user)**: no browser tests. The web step handlers call `last-train.terminal/boot` and `submit` directly, the same functions `web/terminal.cljs` calls. They also check the built `build/site/index.html` for `#command`, `#transcript`, `noscript` and no role leaks. The live site gets an HTTP 200 check for `index.html` and every `.cljc` file. chromedriver is not needed. The `web_steps.clj` step handlers are rewritten to:
   - open the page from a local static server
   - type commands into the prompt
   - read the transcript text from the DOM.
