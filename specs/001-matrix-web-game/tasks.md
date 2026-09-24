@@ -208,7 +208,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
   - Development: prerequisites (bb, APS clone and `APS_HOME`), then `bb spec`, `bb acceptance`, `bb property`, `bb puzzle-search`.
   - Deployment: this is automatic on push to `main`, through `.github/workflows/pages.yml`.
   - Remove any mention of the server-rendered page.
-- [ ] T035 [US3] Do a clean-checkout verification in the scratch directory: clone the repo, set `APS_HOME`, run `bb spec && bb acceptance`, and paste the final counts into the PR or commit message.
+- [X] T035 [US3] Do a clean-checkout verification in the scratch directory: clone the repo, set `APS_HOME`, run `bb spec && bb acceptance`, and paste the final counts into the PR or commit message.
 
 ---
 
@@ -218,8 +218,8 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 - [X] T037 [P] Accessibility pass on `web/terminal.css`/`web/index.html`:
   - Verify contrast: `#33ff66` on `#000` and `#1fae4a` on `#000` must both be at least 4.5:1, and should be about 15:1 and 7:1.
   - Check that `#command` has a visible `:focus-visible` style, and that the page is fully usable with the keyboard alone.
-- [ ] T038 Run the constitution tools one at a time on the changed source (`src/last_train/*.cljc`, `cli.clj`): `crap4clj` with cloverage, `dry4clj`, and differential `clj-mutate` (`--max-workers 4`, no `--mutate-all`). If the SwarmForge wrappers are broken (see memory), use direct `bb` invocations. Fix any CRAP or DRY findings in `terminal.cljc` and `puzzles.cljc`.
-- [ ] T039 Walk through `specs/001-matrix-web-game/quickstart.md` steps 1–5 and fix any drift between the docs and the behavior. Mark every task in this file as done.
+- [X] T038 Run the constitution tools one at a time on the changed source (`src/last_train/*.cljc`, `cli.clj`): `crap4clj` with cloverage, `dry4clj`, and differential `clj-mutate` (`--max-workers 4`, no `--mutate-all`). If the SwarmForge wrappers are broken (see memory), use direct `bb` invocations. Fix any CRAP or DRY findings in `terminal.cljc` and `puzzles.cljc`.
+- [X] T039 Walk through `specs/001-matrix-web-game/quickstart.md` steps 1–5 and fix any drift between the docs and the behavior. Mark every task in this file as done.
 
 ---
 

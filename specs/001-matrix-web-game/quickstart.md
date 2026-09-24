@@ -44,7 +44,7 @@ printf 'ask B Is D an Agent?\naccuse A ally D\n' | bin/last-train --seed referen
 
 Then type `new`: a different puzzle starts.
 
-## 4. Look and accessibility check
+## 4. Look and accessibility check (manual; not automated by user decision)
 
 - In DevTools device mode at 360px, 768px and 1440px, there should be no horizontal scrollbar and the prompt should stay visible.
 - Turn on "Emulate CSS prefers-reduced-motion: reduce": the falling code should stop.
