@@ -20,6 +20,16 @@
                               (sort-by (comp - count) words)))
        ")"))
 
+(defn seat-pattern
+  "Regex group matching any word that names a seat in context, longest first."
+  [context]
+  (alternation (keys (references context))))
+
+(defn resolve-seat
+  "Seat named by who in context (seat letter, persona name or pronoun), or nil."
+  [who context]
+  ((references context) (str/lower-case (str/trim who))))
+
 (defn- normalize [text]
   (-> text str/trim (str/replace #"[.?!]+$" "") str/trim str/lower-case))
 
@@ -63,7 +73,7 @@
   "Proposition asked by a supported yes/no question, or nil."
   [text context]
   (let [refs (references context)
-        ref (alternation (keys refs))
+        ref (seat-pattern context)
         text (normalize text)]
     (if-let [[_ x k] (re-matches (re-pattern (str "(?:is|are|am) " ref " " (alternation (keys kind-singular)))) text)]
       [:is (refs x) (kind-singular k)]
@@ -81,6 +91,15 @@
   (let [subject (seat-name seat context)]
     (str subject (if (= "I" subject) " am " " is ") (when negated "not ") (singular-kind-text role))))
 
+(declare ^:private clause)
+
+(defn- negated-clause [prop context]
+  (let [[op x y] prop]
+    (case op
+      :is (is-clause x y true context)
+      :same (str (pair-names x y context) " are not the same kind")
+      (str "it is not true that " (clause prop context)))))
+
 (defn- clause [prop context]
   (let [[op x y] prop]
     (case op
@@ -91,11 +110,7 @@
                   (str "exactly " y " passengers are " (plural-kind-text x)))
       :and (str (clause x context) " and " (clause y context))
       :or (str (clause x context) " or " (clause y context))
-      :not (let [[inner-op a b] x]
-             (case inner-op
-               :is (is-clause a b true context)
-               :same (str (pair-names a b context) " are not the same kind")
-               (str "it is not true that " (clause x context)))))))
+      :not (negated-clause x context))))
 
 (defn- sentence [text]
   (str (str/upper-case (subs text 0 1)) (subs text 1) "."))

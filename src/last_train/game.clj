@@ -9,8 +9,10 @@
 
 (def ^:private noisy "Operator: \"Signal's noisy. Rephrase.\"")
 
-(defn- names [state]
-  (update-vals (get-in state [:puzzle :personas]) :name))
+(defn- english-context
+  "English context for the puzzle's personas, with self as I/me/you when given."
+  ([state] (english-context state nil))
+  ([state self] {:names (update-vals (get-in state [:puzzle :personas]) :name) :self self}))
 
 (defn- say [state seat line]
   (str (get-in state [:puzzle :personas seat :name]) " (" (name seat) "): \"" line "\""))
@@ -24,7 +26,7 @@
 
 (defn- boarding-lines [state]
   (for [[seat prop polarity] (get-in state [:puzzle :opening])]
-    (say state seat (english/render-statement prop polarity {:names (names state) :self seat}))))
+    (say state seat (english/render-statement prop polarity (english-context state seat)))))
 
 (defn start [puzzle]
   (let [state {:puzzle puzzle
@@ -46,21 +48,13 @@
     0))
 
 (defn- find-seat [state who]
-  (let [who (str/lower-case (str/trim who))]
-    (some (fn [[seat persona-name]]
-            (when (#{(str/lower-case (name seat)) (str/lower-case persona-name)} who) seat))
-          (names state))))
-
-(defn- seat-pattern [state]
-  (str "(" (str/join "|" (map #(java.util.regex.Pattern/quote %)
-                              (sort-by (comp - count) (concat (vals (names state)) ["A" "B" "C" "D"]))))
-       ")"))
+  (english/resolve-seat who (english-context state)))
 
 (defn- reject [state]
   {:state state :output [noisy (str "Questions left: " (:questions-left state))]})
 
 (defn- ask [state target question]
-  (if-let [prop (english/parse-question question {:names (names state) :self target})]
+  (if-let [prop (english/parse-question question (english-context state target))]
     (let [yes? (logic/can-say? (get-in state [:puzzle :true-world]) target prop)
           fact [target prop yes?]
           state (-> state
@@ -69,7 +63,7 @@
                     (update :questions-left dec)
                     (update :round inc))]
       {:state state
-       :output (concat [(say state target (english/render-answer prop yes? {:names (names state) :self target}))]
+       :output (concat [(say state target (english/render-answer prop yes? (english-context state target)))]
                        (round-banner state))})
     (reject state)))
 
@@ -89,7 +83,7 @@
 (defn handle
   "Advance the game by one line of player input."
   [state input]
-  (let [who (seat-pattern state)
+  (let [who (english/seat-pattern (english-context state))
         input (str/trim input)]
     (if (:over? state)
       {:state state :output ["The game is over."]}

@@ -57,6 +57,10 @@
     (let [{:keys [last]} (play "ask vera are you an agent?")]
       (should-contain "Vera (A): \"No. I am not an Agent.\"" last)))
 
+  (it "accepts multi-word persona names in any case"
+    (let [{:keys [last]} (play "ask MR. GREY, is Vera an Agent?")]
+      (should-contain "Mr. Grey (D): \"Yes. Vera is an Agent.\"" last)))
+
   (it "reaches the Last Stop after the third question"
     (let [{:keys [state last]} (play "ask B is D an Agent?" "ask B is C an Agent?" "ask D is A an Agent?")]
       (should-contain "Mr. Grey (D): \"Yes. Vera is an Agent.\"" last)
@@ -95,6 +99,10 @@
       (should-not-contain "PERFECT RUN" (text last))
       (should-contain "Score: 175" last)
       (should= {:win? true :ally? false :score 175} (:outcome state))))
+
+  (it "names the ally by persona name"
+    (should= {:win? true :ally? true :score 175}
+             (:outcome (:state (play "ask B is D an Agent?" "ask B is C an Agent?" "accuse Vera ally mr. grey")))))
 
   (it "scores a wrong ally as a plain win"
     (should= {:win? true :ally? false :score 150}

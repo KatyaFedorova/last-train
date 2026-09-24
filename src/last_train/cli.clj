@@ -32,18 +32,23 @@
   (doseq [line lines] (println line))
   (flush))
 
+(defn play
+  "Run a game on *in* and *out* until it ends or input runs out."
+  [puzzle]
+  (let [{:keys [state output]} (game/start puzzle)]
+    (print-lines output)
+    (loop [state state]
+      (when-not (:over? state)
+        (print "> ")
+        (flush)
+        (when-let [line (read-line)]
+          (let [step (game/handle state line)]
+            (print-lines (:output step))
+            (recur (:state step))))))))
+
 (defn -main [& args]
   (let [{:keys [error puzzle]} (parse-args args)]
     (if error
       (do (binding [*out* *err*] (println error))
           (System/exit 2))
-      (let [{:keys [state output]} (game/start puzzle)]
-        (print-lines output)
-        (loop [state state]
-          (when-not (:over? state)
-            (print "> ")
-            (flush)
-            (when-let [line (read-line)]
-              (let [step (game/handle state line)]
-                (print-lines (:output step))
-                (recur (:state step))))))))))
+      (play puzzle))))

@@ -5,6 +5,10 @@
         :extra-paths ["spec"]
         :requires ([speclj.main])
         :task (apply speclj.main/-main "-c" "spec" *command-line-args*)}
+  property {:doc "Run property tests (test.check); kept out of spec, coverage and mutation"
+            :extra-paths ["property"]
+            :requires ([speclj.main])
+            :task (apply speclj.main/-main "-c" "property" *command-line-args*)}
   acceptance-spec {:doc "Run specs for the acceptance runtime and generator"
                    :extra-paths ["acceptance/src" "acceptance/spec"]
                    :requires ([speclj.main])

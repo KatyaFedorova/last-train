@@ -106,3 +106,17 @@
       (should= (if polarity prop [:not prop])
                (english/parse-prop (english/render-statement prop polarity {:names names :self self})
                                    {:names names :self self})))))
+
+
+(describe "Naming seats"
+  (it "resolves seat letters, persona names and the addressed passenger"
+    (should= :A (english/resolve-seat " a " {:names names}))
+    (should= :D (english/resolve-seat "MR. GREY" {:names names}))
+    (should= :B (english/resolve-seat "you" {:names names :self :B}))
+    (should-be-nil (english/resolve-seat "you" {:names names}))
+    (should-be-nil (english/resolve-seat "Neo" {:names names})))
+
+  (it "matches the longest seat name first"
+    (let [pattern (re-pattern (str "(?i)" (english/seat-pattern {:names {:A "Al" :B "Alma"}})))]
+      (should= ["Alma" "Alma"] (re-find pattern "Alma"))
+      (should-not (re-matches pattern "Neo")))))
