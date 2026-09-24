@@ -27,8 +27,8 @@
 (defn ask-cli [world speaker text]
   (type-line world (str "ask " speaker " " (english/render-question (engine/prop text) {}))))
 
-(defn- output [world] (get-in world [:session :output]))
-(defn- last-output [world] (get-in world [:session :last]))
+(defn output [world] (get-in world [:session :output]))
+(defn last-output [world] (get-in world [:session :last]))
 
 (defn- check-statement-count [world n]
   (check (= (parse-long n) (count (transcript/statements (last-output world))))
@@ -40,8 +40,7 @@
   world)
 
 (defn- check-questions-left [world n]
-  (check (= (parse-long n) (transcript/questions-left (output world)))
-         (str "Questions left: " (transcript/questions-left (output world))))
+  (transcript/check-questions-left (output world) n)
   world)
 
 (defn- check-questions-unchanged [world n]
@@ -58,25 +57,8 @@
   (transcript/check-no-roles (output world))
   world)
 
-(defn check-see [world text]
-  (check (str/includes? (str/join "\n" (last-output world)) text)
-         (str "Did not see " (pr-str text) " in " (last-output world)))
-  world)
-
-(defn check-round [world title]
-  (check (nil? (transcript/round-title (last-output world))) "The round changed")
-  (check (= (str/lower-case title) (str/lower-case (transcript/round-title (output world))))
-         (str "Round is " (transcript/round-title (output world))))
-  world)
-
-(defn check-advanced-round [world title]
-  (check (= (str/lower-case title) (some-> (transcript/round-title (last-output world)) str/lower-case))
-         (str "Advanced to " (transcript/round-title (last-output world))))
-  world)
-
 (defn- check-template-answer [world seat expected]
-  (check (= [(engine/yes-no expected)] (transcript/answers-of (last-output world) seat))
-         (str "Answer lines: " (last-output world)))
+  (transcript/check-answer (last-output world) seat expected)
   world)
 
 (defn- ask-twice [world speaker first-seat second-seat]
@@ -93,13 +75,9 @@
 (defn accuse [world agent ally]
   (type-line world (str "accuse " agent (when ally (str " ally " ally)))))
 
-(defn check-score [world score]
-  (check (some #{(str "Score: " score)} (last-output world)) (str "Output: " (last-output world)))
-  world)
-
 (defn check-over [world]
   (check (get-in world [:session :state :over?]) "The game is still running")
-  (check (some #{"GAME OVER"} (last-output world)) "GAME OVER not shown")
+  (transcript/check-game-over-shown (last-output world))
   world)
 
 (def handlers

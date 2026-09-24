@@ -2,6 +2,7 @@
   "All project step handlers."
   (:require [last-train.acceptance.cli-steps :as cli-steps]
             [last-train.acceptance.engine-steps :as engine-steps]
+            [last-train.acceptance.transcript :as transcript]
             [last-train.acceptance.web-steps :as web-steps]))
 
 (defn- ask
@@ -22,21 +23,42 @@
   world)
 
 (defn- on-game
-  "Step handler that plays through the web page when one is open, else the terminal."
+  "Handler that uses the web page when one is open, else the terminal."
   [cli-handler web-handler]
   (fn [world & args]
     (apply (if (:web world) web-handler cli-handler) world args)))
 
+(def ^:private recent-lines
+  "Lines the last move added."
+  (on-game cli-steps/last-output web-steps/new-lines))
+
+(def ^:private all-lines (on-game cli-steps/output web-steps/lines))
+
+(defn- check-see [world text]
+  (transcript/check-see (recent-lines world) text)
+  world)
+
+(defn- check-round [world title]
+  (transcript/check-round (recent-lines world) (all-lines world) title)
+  world)
+
+(defn- check-advanced-round [world title]
+  (transcript/check-advanced-round (recent-lines world) title)
+  world)
+
+(defn- check-score [world score]
+  (transcript/check-score (recent-lines world) score)
+  world)
+
 (def handlers
   (concat [[#"^I ask passenger (\S+) whether (?!\S+ and then \S+ are Agents$)(.+)$" ask]
            [#"^the (?:only )?possible Agent seats? (?:are|is) (.+)$" check-agent-seats]
-           [#"^I see \"(.+)\"$" (on-game cli-steps/check-see web-steps/check-see)]
-           [#"^I remain in (.+)$" (on-game cli-steps/check-round web-steps/check-round)]
-           [#"^the game advances to the (.+) round$"
-            (on-game cli-steps/check-advanced-round web-steps/check-advanced-round)]
+           [#"^I see \"(.+)\"$" check-see]
+           [#"^I remain in (.+)$" check-round]
+           [#"^the game advances to the (.+) round$" check-advanced-round]
            [#"^I accuse passenger (\S+)(?: and name passenger (\S+) as the Awake ally)?$"
             (on-game cli-steps/accuse web-steps/accuse)]
-           [#"^the score is (\d+)$" (on-game cli-steps/check-score web-steps/check-score)]
+           [#"^the score is (\d+)$" check-score]
            [#"^the game is over$" (on-game cli-steps/check-over web-steps/check-over)]]
           engine-steps/handlers
           cli-steps/handlers

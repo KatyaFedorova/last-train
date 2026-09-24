@@ -111,4 +111,7 @@
   (it "reports a bad port or unknown option"
     (should-contain :error (web/parse-args ["--port" "x"]))
     (should-contain :error (web/parse-args ["--port"]))
+    (should-contain :error (web/parse-args ["--port" "0"]))
+    (should-contain :error (web/parse-args ["--port" "65536"]))
+    (should-contain :error (web/parse-args ["--port" "9000" "extra"]))
     (should-contain :error (web/parse-args ["--seed" "reference"]))))

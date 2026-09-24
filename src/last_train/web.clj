@@ -100,12 +100,17 @@ pre{white-space:pre-wrap}form{margin:1rem 0}a,button,input,select{background:#00
                       (html (page puzzle (if-let [line (input-line params)] (conj moves line) moves))))
     {:status 404 :headers {"Content-Type" "text/plain; charset=utf-8"} :body "Not found"}))
 
+(defn- split-port
+  "Args with a leading --port=value split into --port and value."
+  [args]
+  (if-let [[_ v] (some->> (first args) (re-matches #"--port=(.*)"))]
+    (list* "--port" v (rest args))
+    args))
+
 (defn parse-args
   "Server options: {:port n} or {:error message}."
   [args]
-  (let [[option value & more] (if-let [[_ v] (some->> (first args) (re-matches #"--port=(.*)"))]
-                                (list* "--port" v (rest args))
-                                args)
+  (let [[option value & more] (split-port args)
         port (some-> value parse-long)]
     (cond
       (empty? args) {:port 8080}

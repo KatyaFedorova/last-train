@@ -2,7 +2,6 @@
   "Step handlers that play the game through the web page: they read the
   rendered HTML and submit its own forms back to the request handler."
   (:require [clojure.string :as str]
-            [last-train.acceptance.engine-steps :as engine]
             [last-train.acceptance.runtime :refer [check]]
             [last-train.acceptance.transcript :as transcript]
             [last-train.puzzles :as puzzles]
@@ -49,8 +48,8 @@
   (check (:web world) "No web game is open")
   (get-in world [:web :html]))
 
-(defn- lines [world] (transcript-lines (html world)))
-(defn- new-lines [world] (drop (get-in world [:web :seen]) (lines world)))
+(defn lines [world] (transcript-lines (html world)))
+(defn new-lines [world] (drop (get-in world [:web :seen]) (lines world)))
 
 (defn- encode [text] (URLEncoder/encode text "UTF-8"))
 
@@ -81,8 +80,7 @@
   world)
 
 (defn- check-questions-left [world n]
-  (check (= (parse-long n) (transcript/questions-left (lines world)))
-         (str "Questions left: " (transcript/questions-left (lines world))))
+  (transcript/check-questions-left (lines world) n)
   world)
 
 (defn- check-no-roles [world]
@@ -103,32 +101,11 @@
   world)
 
 (defn- check-answer [world seat expected]
-  (check (= [(engine/yes-no expected)] (transcript/answers-of (new-lines world) seat))
-         (str "New lines: " (vec (new-lines world))))
-  world)
-
-(defn check-see [world text]
-  (check (str/includes? (str/join "\n" (new-lines world)) text)
-         (str "Did not see " (pr-str text) " in " (vec (new-lines world))))
-  world)
-
-(defn check-round [world title]
-  (check (nil? (transcript/round-title (new-lines world))) "The round changed")
-  (check (= (str/lower-case title) (some-> (transcript/round-title (lines world)) str/lower-case))
-         (str "Round is " (transcript/round-title (lines world))))
-  world)
-
-(defn check-advanced-round [world title]
-  (check (= (str/lower-case title) (some-> (transcript/round-title (new-lines world)) str/lower-case))
-         (str "Advanced to " (transcript/round-title (new-lines world))))
-  world)
-
-(defn check-score [world score]
-  (check (some #{(str "Score: " score)} (new-lines world)) (str "New lines: " (vec (new-lines world))))
+  (transcript/check-answer (new-lines world) seat expected)
   world)
 
 (defn check-over [world]
-  (check (some #{"GAME OVER"} (new-lines world)) "GAME OVER not shown")
+  (transcript/check-game-over-shown (new-lines world))
   (check (empty? (forms (html world))) "The page still accepts moves")
   world)
 
