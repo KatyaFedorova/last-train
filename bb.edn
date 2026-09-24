@@ -17,5 +17,9 @@
                   :extra-paths ["acceptance/src" "acceptance/generated"]
                   :requires ([speclj.main])
                   :task (apply speclj.main/-main "-c" "acceptance/generated" *command-line-args*)}
+  acceptance-runner-worker {:doc "Persistent gherkin-mutator runner adapter (JSON lines on stdin/stdout)"
+                            :extra-paths ["acceptance/src"]
+                            :requires ([last-train.acceptance.runner-worker])
+                            :task (last-train.acceptance.runner-worker/-main)}
   acceptance {:doc "Parse features, generate entry points, run acceptance tests"
               :task (shell "bin/acceptance")}}}
