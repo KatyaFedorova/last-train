@@ -2,3 +2,5 @@ build/
 acceptance/generated/
 tmp/
 .cpcache/
+.DS_Store
+*.bak
