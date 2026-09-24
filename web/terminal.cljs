@@ -63,17 +63,7 @@
   (set! (.-hidden (el "rules")) (not open?))
   (.setAttribute (el "rules-toggle") "aria-expanded" (str open?)))
 
-(defn- rules-seen? []
-  (try (= "yes" (.getItem js/localStorage "last-train-rules-seen"))
-       (catch :default _ false)))
-
-(defn- remember-rules-seen! []
-  (try (.setItem js/localStorage "last-train-rules-seen" "yes")
-       (catch :default _ nil)))
-
 (defn- start-rules! []
-  (show-rules! (not (rules-seen?)))
-  (remember-rules-seen!)
   (.addEventListener (el "rules-toggle") "click"
                      #(show-rules! (.-hidden (el "rules"))))
   (.addEventListener js/document "keydown"
