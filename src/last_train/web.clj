@@ -104,7 +104,7 @@ pre{white-space:pre-wrap}form{margin:1rem 0}a,button,input,select{background:#00
   "Args with a leading --port=value split into --port and value."
   [args]
   (if-let [[_ v] (some->> (first args) (re-matches #"--port=(.*)"))]
-    (list* "--port" v (rest args))
+    (list* "--port" v (drop 1 args))
     args))
 
 (defn parse-args
@@ -116,6 +116,6 @@ pre{white-space:pre-wrap}form{margin:1rem 0}a,button,input,select{background:#00
       (empty? args) {:port 8080}
       (not= "--port" option) {:error (str "Unknown option: " option)}
       (nil? value) {:error "Missing value for --port"}
-      (not (and port (< 0 port 65536))) {:error (str "Bad port: " value)}
+      (not (and port (pos? port) (< port 65536))) {:error (str "Bad port: " value)}
       (seq more) {:error (str "Unknown option: " (first more))}
       :else {:port port})))

@@ -9,6 +9,10 @@
             :extra-paths ["property"]
             :requires ([speclj.main])
             :task (apply speclj.main/-main "-c" "property" *command-line-args*)}
+  hardening {:doc "Run focused hardening specifications"
+             :extra-paths ["hardening"]
+             :requires ([speclj.main])
+             :task (apply speclj.main/-main "-c" "hardening" *command-line-args*)}
   acceptance-spec {:doc "Run specs for the acceptance runtime and generator"
                    :extra-paths ["acceptance/src" "acceptance/spec"]
                    :requires ([speclj.main])

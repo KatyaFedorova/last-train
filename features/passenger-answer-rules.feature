@@ -1,6 +1,6 @@
-# mutation-stamp: sha256=50c5ae608181044b6a20c96217e74effbd517f5b57772dd0fb5484d7e78174fb
+# mutation-stamp: sha256=8c5b6a9d06effd3d6fd924593fe691d2ace225566254c75a9a708adef769c070
 # acceptance-mutation-manifest-begin
-# {"version":1,"tested_at":"2026-09-24T06:36:23.973419Z","feature_name":"Passenger answer rules","feature_path":"features/passenger-answer-rules.feature","background_hash":"7b62a40cd5758167d3424c162e5bff2b8b32e2abfb66a83ab8648868d508380f","implementation_hash":"sha256:aeb8a53f6e141a5387cf75dc04135e64823e9224b46c97ce8f867773c28308cd","scenarios":[{"index":0,"name":"Passenger answer rules 01 - each kind answers supported propositions by its rule","scenario_hash":"77b379c1f90d52a2e07b2b9fef7f65e28d9f6b37f465282bbce380c5c67c29f8","mutation_count":45,"result":{"Total":45,"Killed":45,"Survived":0,"Errors":0},"tested_at":"2026-09-24T06:24:53.066652Z"}]}
+# {"version":1,"tested_at":"2026-09-24T22:53:21.175926Z","feature_name":"Passenger answer rules","feature_path":"features/passenger-answer-rules.feature","background_hash":"7b62a40cd5758167d3424c162e5bff2b8b32e2abfb66a83ab8648868d508380f","implementation_hash":"sha256:db2d9f18a9bb17dcc745c30e43cb389ecac652821f0c07355b5ecac3b9974e3a","scenarios":[{"index":0,"name":"Passenger answer rules 01 - each kind answers supported propositions by its rule","scenario_hash":"315fa0972cf794bd6cfb85fc6d348b9d27fbf410d76b45554f242dd9ac6dac26","mutation_count":54,"result":{"Total":54,"Killed":54,"Survived":0,"Errors":0},"tested_at":"2026-09-24T22:52:06.259735Z"}]}
 # acceptance-mutation-manifest-end
 
 # Scenario: Passenger answer rules 01 - each kind answers supported propositions by its rule
