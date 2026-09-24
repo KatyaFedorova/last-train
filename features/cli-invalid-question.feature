@@ -5,3 +5,4 @@ Feature: CLI invalid question
     When I type "what is love?"
     Then I see "Signal's noisy. Rephrase."
     And the question count remains 3
+    And I remain in Station 1
