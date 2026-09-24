@@ -46,4 +46,10 @@ Run the Gherkin acceptance suite with:
 bb acceptance
 ```
 
+Run the property tests (kept out of the unit, coverage and mutation runs) with:
+
+```sh
+bb property
+```
+
 The logic engine is deterministic and does not call an LLM. See [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) for the game rules, architecture, and reference puzzle.
