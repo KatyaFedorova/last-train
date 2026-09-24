@@ -1,0 +1,21 @@
+{:paths ["src"]
+ :deps {speclj/speclj {:mvn/version "3.13.0"}}
+ :tasks
+ {spec {:doc "Run unit specs"
+        :extra-paths ["spec"]
+        :requires ([speclj.main])
+        :task (apply speclj.main/-main "-c" "spec" *command-line-args*)}
+  acceptance-spec {:doc "Run specs for the acceptance runtime and generator"
+                   :extra-paths ["acceptance/src" "acceptance/spec"]
+                   :requires ([speclj.main])
+                   :task (apply speclj.main/-main "-c" "acceptance/spec" *command-line-args*)}
+  acceptance-generate {:doc "acceptance-entrypoint-generator <json-ir> <generated-test-output>"
+                       :extra-paths ["acceptance/src"]
+                       :requires ([last-train.acceptance.generator])
+                       :task (apply last-train.acceptance.generator/-main *command-line-args*)}
+  acceptance-run {:doc "Run generated acceptance tests"
+                  :extra-paths ["acceptance/src" "acceptance/generated"]
+                  :requires ([speclj.main])
+                  :task (apply speclj.main/-main "-c" "acceptance/generated" *command-line-args*)}
+  acceptance {:doc "Parse features, generate entry points, run acceptance tests"
+              :task (shell "bin/acceptance")}}}

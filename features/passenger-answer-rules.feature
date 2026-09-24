@@ -21,6 +21,6 @@ Feature: Passenger answer rules
       | B       | it is not true that A is an Agent   | yes    |
       | B       | A is an Agent and D is Awake        | no     |
       | B       | A is a Sleeper and D is a Sleeper   | yes    |
-      | A       | A is an Agent and D is Awake        | yes    |
+      | A       | A is an Agent and D is Awake        | no     |
       | A       | A is an Agent or B is an Agent      | no     |
       | D       | A is an Agent or B is an Agent      | yes    |

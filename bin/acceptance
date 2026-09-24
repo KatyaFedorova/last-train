@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Normal acceptance run: parse every feature, generate entry points, run them.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if ! command -v gherkin-parser >/dev/null; then
+  echo "gherkin-parser not on PATH; run: swarm_tool.sh require gherkin-parser" >&2
+  exit 1
+fi
+
+rm -rf build/acceptance/ir acceptance/generated
+mkdir -p build/acceptance/ir
+for feature in features/*.feature; do
+  ir="build/acceptance/ir/$(basename "$feature" .feature).json"
+  gherkin-parser "$feature" "$ir"
+  bin/acceptance-entrypoint-generator "$ir" acceptance/generated
+done
+exec bb acceptance-run "$@"
