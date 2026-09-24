@@ -39,6 +39,8 @@
 
   (it "returns nil for text it cannot read"
     (should-be-nil (english/parse-prop "what is love?" {}))
+    (should-be-nil (english/parse-prop "A is an Agent and the walls are listening" {}))
+    (should-be-nil (english/parse-prop "A is an Agent or the walls are listening" {}))
     (should-be-nil (english/parse-prop "Neo is an Agent" {:names names}))
     (should-be-nil (english/parse-prop "I am an Agent" {}))))
 

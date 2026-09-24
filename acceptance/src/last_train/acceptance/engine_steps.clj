@@ -13,7 +13,7 @@
    ["D" "B and C are the same kind" true]])
 
 (defn seat [text]
-  (let [seat (keyword (str/upper-case (str/trim text)))]
+  (let [seat (keyword (str/trim text))]
     (check (some #{seat} logic/seats) (str "Unknown seat: " text))
     seat))
 
@@ -23,7 +23,7 @@
   (mapv seat (remove str/blank? (str/split text #",\s*(?:and\s+)?|\s+and\s+"))))
 
 (defn yes-no [text]
-  (case (str/lower-case text)
+  (case text
     "yes" true
     "no" false
     (check false (str "Expected yes or no, got: " text))))
@@ -33,8 +33,15 @@
     (check parsed (str "Unreadable proposition: " text))
     parsed))
 
+(defn- canonical-prop [text]
+  (let [parsed (prop text)
+        canonical (str/replace (english/render-statement parsed true {}) #"\.$" "")]
+    (check (= text canonical) (str "Use canonical proposition text: " canonical))
+    parsed))
+
 (defn- role [text]
   (let [role (keyword (str/lower-case text))]
+    (check (= text (str/upper-case (name role))) (str "Use uppercase role name: " text))
     (check (some #{role} logic/roles) (str "Unknown role: " text))
     role))
 
@@ -58,7 +65,7 @@
 
 (defn ask-engine [world speaker text]
   (let [speaker (seat speaker)
-        prop (prop text)
+        prop (canonical-prop text)
         answer (logic/can-say? (:world world) speaker prop)
         fact [speaker prop answer]]
     (cond-> (-> world
@@ -131,7 +138,7 @@
   world)
 
 (defn- ask-each-sleeper [world text]
-  (let [p (prop text)]
+  (let [p (canonical-prop text)]
     (assoc world :sleeper-answers
            (for [w (:worlds world) s logic/seats :when (= :sleeper (w s))]
              (logic/can-say? w s p)))))
@@ -174,5 +181,6 @@
     (fn [world depth expected]
       (let [depth (parse-long depth)]
         (check depth "Depth must be a number")
+        (check (#{1 2} depth) "The reference puzzle test covers depths 1 and 2")
         (check (= (yes-no expected) (logic/solvable? (:worlds world) depth)) "Solvability differs")
         world))]])

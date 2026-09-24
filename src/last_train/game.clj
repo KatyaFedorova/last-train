@@ -5,7 +5,7 @@
             [last-train.logic :as logic]))
 
 (def ^:private round-titles
-  {1 "Boarding" 2 "Station 1" 3 "Déjà vu" 4 "Station 2" 5 "Last Stop"})
+  {2 "Station 1" 3 "Déjà vu" 4 "Station 2" 5 "Last Stop"})
 
 (def ^:private noisy "Operator: \"Signal's noisy. Rephrase.\"")
 

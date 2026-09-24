@@ -12,8 +12,8 @@
       (if-let [[_ k v] (re-matches #"--(seed|voices)=(.*)" arg)]
         (recur more (assoc opts k v))
         (if-let [[_ k] (re-matches #"--(seed|voices)" arg)]
-          (if (seq more)
-            (recur (rest more) (assoc opts k (first more)))
+          (if-let [[value & remaining] (seq more)]
+            (recur remaining (assoc opts k value))
             {:error (str "Missing value for " arg)})
           {:error (str "Unknown option: " arg)}))
       opts)))

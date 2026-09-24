@@ -11,6 +11,7 @@
    [:B [:not [:is :A :agent]] true]
    [:C [:same :B :C] true]
    [:D [:same :B :C] true]])
+(def reference-worlds (logic/consistent reference-opening))
 
 (describe "Worlds"
   (it "has twelve distinct worlds of one Agent, one Awake and two Sleepers"
@@ -87,15 +88,18 @@
     (should-not-contain [:A [:same :D :C]] logic/questions)))
 
 (describe "Solvability"
-  (let [worlds (logic/consistent reference-opening)]
-    (it "is solved when every world has the same Agent"
-      (should (logic/solvable? [w1] 0)))
+  (it "is solved when every world has the same Agent"
+    (should (logic/solvable? [w1] 0)))
 
-    (it "is not solved at depth zero with several Agent candidates"
-      (should-not (logic/solvable? worlds 0)))
+  (it "is not solved at depth zero with several Agent candidates"
+    (should= false (logic/solvable? reference-worlds 0)))
 
-    (it "is not solvable with one question for the reference puzzle"
-      (should-not (logic/solvable? worlds 1)))
+  (it "needs both answer branches to be solvable"
+    (should= false (logic/solvable? reference-worlds 1))
+    (should= true (logic/solvable? [w1 w2] 1)))
 
-    (it "is solvable with two adaptive questions for the reference puzzle"
-      (should (logic/solvable? worlds 2)))))
+  (it "is not solvable with one question for the reference puzzle"
+    (should-not (logic/solvable? reference-worlds 1)))
+
+  (it "is solvable with two adaptive questions for the reference puzzle"
+    (should (logic/solvable? reference-worlds 2))))
