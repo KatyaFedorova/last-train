@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 # Normal acceptance run: parse every feature, generate entry points, run them.
+# Parser: gherkin-parser on PATH, else the Babashka APS tool in $APS_HOME
+# (default .swarmforge/tools/Acceptance-Pipeline-Specification).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-if ! command -v gherkin-parser >/dev/null; then
-  echo "gherkin-parser not on PATH; run: swarm_tool.sh require gherkin-parser" >&2
+APS_HOME="${APS_HOME:-.swarmforge/tools/Acceptance-Pipeline-Specification}"
+
+parse() {
+  if command -v gherkin-parser >/dev/null; then
+    gherkin-parser "$1" "$2"
+  else
+    bb --config "$APS_HOME/bb.edn" gherkin-parser "$1" "$2"
+  fi
+}
+
+if ! command -v gherkin-parser >/dev/null && [[ ! -f "$APS_HOME/bb.edn" ]]; then
+  echo "No Gherkin parser: put gherkin-parser on PATH, or set APS_HOME to a clone of" >&2
+  echo "https://github.com/unclebob/Acceptance-Pipeline-Specification (APS_HOME=$APS_HOME not found)" >&2
   exit 1
 fi
 
@@ -12,7 +25,7 @@ rm -rf build/acceptance/ir acceptance/generated
 mkdir -p build/acceptance/ir
 for feature in features/*.feature; do
   ir="build/acceptance/ir/$(basename "$feature" .feature).json"
-  gherkin-parser "$feature" "$ir"
+  parse "$feature" "$ir"
   bin/acceptance-entrypoint-generator "$ir" acceptance/generated
 done
 exec bb acceptance-run "$@"
