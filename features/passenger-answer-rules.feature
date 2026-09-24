@@ -24,6 +24,9 @@ Feature: Passenger answer rules
       | B       | C and D are the same kind           | yes    |
       | B       | There are no Agents on this train   | yes    |
       | B       | A is not an Agent                   | yes    |
+      | B       | B is an Agent                       | no     |
+      | B       | B is Awake                          | no     |
+      | B       | B is a Sleeper                      | yes    |
       | B       | A is an Agent and D is Awake        | no     |
       | B       | A is a Sleeper and D is a Sleeper   | yes    |
       | A       | A is an Agent and D is Awake        | no     |
