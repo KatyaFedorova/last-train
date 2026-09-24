@@ -178,7 +178,7 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 **Independent Test**: after a push, `gh run watch` shows `verify` then `deploy` green within 10 minutes. The URL loads in a private window on desktop and on a phone, and a full game can be completed.
 
-- [ ] T029 [US2] Create `.github/workflows/pages.yml`:
+- [X] T029 [US2] Create `.github/workflows/pages.yml`:
   - Trigger: `on: push: branches: [main]` and `workflow_dispatch`.
   - `permissions: contents: read, pages: write, id-token: write`; `concurrency: group: pages, cancel-in-progress: false`.
   - Job `verify` on `ubuntu-latest`:
@@ -187,9 +187,9 @@ description: "Task list for Matrix Web Game on GitHub Pages"
     - Run `git clone --depth 1 https://github.com/unclebob/Acceptance-Pipeline-Specification "$RUNNER_TEMP/aps"`, with `APS_HOME` set to that path.
     - Run `bb spec`, then `bb acceptance`.
   - Job `deploy` (`needs: verify`, `environment: github-pages`): `bb site`, then `actions/configure-pages@v5`, `actions/upload-pages-artifact@v3` with `path: build/site`, and `actions/deploy-pages@v4`.
-- [ ] T030 [US2] Enable Pages with the Actions source: `gh api -X POST repos/KatyaFedorova/last-train/pages -f build_type=workflow`. If it already exists, use `gh api -X PUT … -f build_type=workflow`. Then run `gh api repos/KatyaFedorova/last-train/pages -q .html_url` and confirm it prints `https://katyafedorova.github.io/last-train/`.
-- [ ] T031 [US2] Push to `main` and run `gh run watch --exit-status`. If `verify` fails in CI but passes locally, fix the environment difference in the workflow, not the tests.
-- [ ] T032 [US2] Check the live site over HTTP, with no browser: `curl -fsS` must return 200 for `https://katyafedorova.github.io/last-train/`, `terminal.css`, `terminal.cljs` and each `last_train/*.cljc`. The HTML must contain `id="command"`, and the Scittle script URL must return 200. Record the results in the commit message.
+- [X] T030 [US2] Enable Pages with the Actions source: `gh api -X POST repos/KatyaFedorova/last-train/pages -f build_type=workflow`. If it already exists, use `gh api -X PUT … -f build_type=workflow`. Then run `gh api repos/KatyaFedorova/last-train/pages -q .html_url` and confirm it prints `https://katyafedorova.github.io/last-train/`.
+- [X] T031 [US2] Push to `main` and run `gh run watch --exit-status`. If `verify` fails in CI but passes locally, fix the environment difference in the workflow, not the tests.
+- [X] T032 [US2] Check the live site over HTTP, with no browser: `curl -fsS` must return 200 for `https://katyafedorova.github.io/last-train/`, `terminal.css`, `terminal.cljs` and each `last_train/*.cljc`. The HTML must contain `id="command"`, and the Scittle script URL must return 200. Record the results in the commit message.
 
 **Checkpoint**: the public URL plays the game, and pushes redeploy automatically.
 
@@ -201,8 +201,8 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 **Independent Test**: `git clone https://github.com/KatyaFedorova/last-train /tmp/lt && cd /tmp/lt && APS_HOME=<aps clone> bb spec && bb acceptance` is green, and following the README works.
 
-- [ ] T033 [US3] Add a hardening check in `acceptance/spec/last_train/bin_acceptance_spec.clj` (Speclj, `acceptance-spec` task). Run `bin/acceptance` with `PATH` stripped of `gherkin-parser` and `APS_HOME` pointing to a nonexistent directory. Assert it exits 1 and that stderr names both `gherkin-parser` and `APS_HOME`.
-- [ ] T034 [US3] Rewrite `README.md`:
+- [X] T033 [US3] Add a hardening check in `acceptance/spec/last_train/bin_acceptance_spec.clj` (Speclj, `acceptance-spec` task). Run `bin/acceptance` with `PATH` stripped of `gherkin-parser` and `APS_HOME` pointing to a nonexistent directory. Assert it exits 1 and that stderr names both `gherkin-parser` and `APS_HOME`.
+- [X] T034 [US3] Rewrite `README.md`:
   - Replace the "Play in a browser" section with: the public URL; how to play locally (`bin/last-train-web` → `http://localhost:8080/`, and `?puzzle=<name>`); the commands `ask`, `accuse`, `new` and `help`.
   - Terminal: the `--seed` names and `random`.
   - Development: prerequisites (bb, APS clone and `APS_HOME`), then `bb spec`, `bb acceptance`, `bb property`, `bb puzzle-search`.
@@ -214,8 +214,8 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T036 [P] Add `property/last_train/terminal_property_spec.clj` (Speclj + test.check, kept under `bb property` only). It replaces the deleted web property spec. For random command sequences over the reference puzzle, the web session's non-`:player` lines equal the CLI transcript from `game/start`/`game/handle` for the same inputs (FR-001, SC-002). Before game over, no line reveals a role.
-- [ ] T037 [P] Accessibility pass on `web/terminal.css`/`web/index.html`:
+- [X] T036 [P] Add `property/last_train/terminal_property_spec.clj` (Speclj + test.check, kept under `bb property` only). It replaces the deleted web property spec. For random command sequences over the reference puzzle, the web session's non-`:player` lines equal the CLI transcript from `game/start`/`game/handle` for the same inputs (FR-001, SC-002). Before game over, no line reveals a role.
+- [X] T037 [P] Accessibility pass on `web/terminal.css`/`web/index.html`:
   - Verify contrast: `#33ff66` on `#000` and `#1fae4a` on `#000` must both be at least 4.5:1, and should be about 15:1 and 7:1.
   - Check that `#command` has a visible `:focus-visible` style, and that the page is fully usable with the keyboard alone.
 - [ ] T038 Run the constitution tools one at a time on the changed source (`src/last_train/*.cljc`, `cli.clj`): `crap4clj` with cloverage, `dry4clj`, and differential `clj-mutate` (`--max-workers 4`, no `--mutate-all`). If the SwarmForge wrappers are broken (see memory), use direct `bb` invocations. Fix any CRAP or DRY findings in `terminal.cljc` and `puzzles.cljc`.
