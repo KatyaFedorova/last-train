@@ -21,6 +21,12 @@ if ! command -v gherkin-parser >/dev/null && [[ ! -f "$APS_HOME/bb.edn" ]]; then
   exit 1
 fi
 
+if command -v npx >/dev/null; then
+  bin/cljs-smoke
+else
+  echo "cljs-smoke skipped: npx not found (install Node to check the browser core)" >&2
+fi
+
 rm -rf build/acceptance/ir acceptance/generated
 mkdir -p build/acceptance/ir
 for feature in features/*.feature; do

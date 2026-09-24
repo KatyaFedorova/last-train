@@ -121,4 +121,9 @@
   (it "matches the longest seat name first"
     (let [pattern (re-pattern (str "(?i)" (english/seat-pattern {:names {:A "Al" :B "Alma"}})))]
       (should= ["Alma" "Alma"] (re-find pattern "Alma"))
-      (should-not (re-matches pattern "Neo")))))
+      (should-not (re-matches pattern "Neo"))))
+
+  (it "treats regex characters in names literally"
+    (let [pattern (re-pattern (english/seat-pattern {:names names}))]
+      (should (re-matches pattern "mr. grey"))
+      (should-not (re-matches pattern "mrx grey")))))

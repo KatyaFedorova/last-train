@@ -15,8 +15,12 @@
          (into {} (for [[seat persona] names] [(str/lower-case persona) seat]))
          (when self {"i" self "me" self "you" self})))
 
+(defn- regex-quote [word]
+  #?(:clj (java.util.regex.Pattern/quote word)
+     :cljs (str/replace word #"[.*+?^${}()|\[\]\\]" "\\$&")))
+
 (defn- alternation [words]
-  (str "(" (str/join "|" (map #(java.util.regex.Pattern/quote %)
+  (str "(" (str/join "|" (map regex-quote
                               (sort-by (comp - count) words)))
        ")"))
 

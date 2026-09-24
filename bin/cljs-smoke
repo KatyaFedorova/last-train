@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Check the shared .cljc core runs as ClojureScript (nbb = SCI on Node, the
+# interpreter Scittle uses in the browser) and matches the Babashka CLI.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+moves=$'ASK B Is D an Agent?\naccuse A ally D'
+cljs=$(npx --yes nbb@1 -cp src -e "
+(require '[clojure.string :as str] '[last-train.game :as g] '[last-train.puzzles :as p])
+(loop [{:keys [state output]} (g/start p/reference)
+       moves (str/split-lines \"${moves//$'\n'/\\n}\")]
+  (run! println output)
+  (when-let [[m & more] (seq moves)]
+    (recur (g/handle state m) more)))")
+clj=$(printf '%s\n' "$moves" | bin/last-train --seed reference | sed 's/^> //')
+
+if [[ "$cljs" == "$clj" ]]; then
+  echo "cljs-smoke: ClojureScript core matches the CLI"
+else
+  echo "cljs-smoke: ClojureScript core differs from the CLI" >&2
+  diff <(printf '%s\n' "$cljs") <(printf '%s\n' "$clj") >&2 || true
+  exit 1
+fi

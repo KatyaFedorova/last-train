@@ -30,11 +30,11 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 **Purpose**: make the repo safe to work in and the tools runnable.
 
-- [ ] T001 Confirm SwarmForge is stopped. `ps aux | grep -E "SwarmForge (Coder|Refactorer)|handoffd.bb" | grep -v grep` must print nothing. If it prints anything, STOP and ask the user to stop SwarmForge. Then `git pull --ff-only` on `main`.
-- [ ] T002 Make `bin/acceptance` resolve the parser in this order (research R4): (1) `gherkin-parser` on PATH; (2) `bb --config "$APS_HOME/bb.edn" gherkin-parser`, where `APS_HOME` defaults to `.swarmforge/tools/Acceptance-Pipeline-Specification`; (3) otherwise exit 1 with a message naming both options and the clone URL `https://github.com/unclebob/Acceptance-Pipeline-Specification`. Write the IR to `build/acceptance/ir/` as it does now.
-- [ ] T003 Run `bb acceptance`. Expect **56 examples, 0 failures**, the baseline recorded in research.md. Save the tail of the output in the commit message for T002.
-- [ ] T004 [P] Add `org.babashka/http-server` (latest) to `:deps` in `bb.edn`. Run `bb -e "(require 'babashka.http-server)"` to confirm it loads. Do NOT add etaoin; there are no browser tests.
-- [ ] T005 [P] Create the `web/` directory (static page sources) with a `.gitkeep`. Confirm that `build/` is still listed in `.gitignore`.
+- [X] T001 Confirm SwarmForge is stopped. `ps aux | grep -E "SwarmForge (Coder|Refactorer)|handoffd.bb" | grep -v grep` must print nothing. If it prints anything, STOP and ask the user to stop SwarmForge. Then `git pull --ff-only` on `main`.
+- [X] T002 Make `bin/acceptance` resolve the parser in this order (research R4): (1) `gherkin-parser` on PATH; (2) `bb --config "$APS_HOME/bb.edn" gherkin-parser`, where `APS_HOME` defaults to `.swarmforge/tools/Acceptance-Pipeline-Specification`; (3) otherwise exit 1 with a message naming both options and the clone URL `https://github.com/unclebob/Acceptance-Pipeline-Specification`. Write the IR to `build/acceptance/ir/` as it does now.
+- [X] T003 Run `bb acceptance`. Expect **56 examples, 0 failures**, the baseline recorded in research.md. Save the tail of the output in the commit message for T002.
+- [X] T004 [P] (Done differently: Babashka's built-in `org.httpkit.server` is used, so no new dependency.) Add `org.babashka/http-server` (latest) to `:deps` in `bb.edn`. Run `bb -e "(require 'babashka.http-server)"` to confirm it loads. Do NOT add etaoin; there are no browser tests.
+- [X] T005 [P] Create the `web/` directory (static page sources) with a `.gitkeep`. Confirm that `build/` is still listed in `.gitignore`.
 
 ---
 
@@ -42,10 +42,10 @@ description: "Task list for Matrix Web Game on GitHub Pages"
 
 **Purpose**: make the game core portable to the browser without changing behavior (research R1).
 
-- [ ] T006 `git mv` these files to `.cljc`, keeping the namespace names: `src/last_train/logic.clj` → `logic.cljc`, `english.clj` → `english.cljc`, `game.clj` → `game.cljc`, `puzzles.clj` → `puzzles.cljc`. Leave `cli.clj` as it is. Run `bb spec` and `bb acceptance`; both stay green.
-- [ ] T007 In `src/last_train/english.cljc`, replace `java.util.regex.Pattern/quote` inside `alternation` with a reader conditional: `#?(:clj (java.util.regex.Pattern/quote w) :cljs (clojure.string/replace w #"[.*+?^${}()|\[\]\\]" "\\$&"))`. Add a Speclj example in `spec/last_train/english_spec.clj` asserting that a persona name containing a dot (`"Mr. Grey"`) still resolves through `resolve-seat` and `seat-pattern`.
-- [ ] T008 Grep `src/last_train/*.cljc` for other JVM-only forms (`java.`, `Long/`, `Integer/`, `format`, `.getBytes`, `Math/`) and wrap each one in `#?(:clj … :cljs …)`. If none are found, record that in the commit message.
-- [ ] T009 Check the ClojureScript side without a browser. Use **nbb** (SCI on Node, the same interpreter as Scittle, with the same `:cljs` reader branch): add `bin/cljs-smoke`, which runs `npx --yes nbb@latest -cp src -e "(require '[last-train.game :as g] '[last-train.puzzles :as p]) (run! println (:output (g/start p/reference)))"`. Its output must equal the first 12 lines of `bin/last-train --seed reference </dev/null`. Also run `(g/handle state "ASK B Is D an Agent?")` to check that the `(?i)` regex works. If `parse-long`, `update-vals` or `(?i)` fail, fix them with reader conditionals in the `.cljc` files. Pin the Scittle version (latest on npm) in `research.md` R1. Add `bin/cljs-smoke` to `bb acceptance`'s preflight when `npx` is available, and print a skip notice otherwise.
+- [X] T006 `git mv` these files to `.cljc`, keeping the namespace names: `src/last_train/logic.clj` → `logic.cljc`, `english.clj` → `english.cljc`, `game.clj` → `game.cljc`, `puzzles.clj` → `puzzles.cljc`. Leave `cli.clj` as it is. Run `bb spec` and `bb acceptance`; both stay green.
+- [X] T007 In `src/last_train/english.cljc`, replace `java.util.regex.Pattern/quote` inside `alternation` with a reader conditional: `#?(:clj (java.util.regex.Pattern/quote w) :cljs (clojure.string/replace w #"[.*+?^${}()|\[\]\\]" "\\$&"))`. Add a Speclj example in `spec/last_train/english_spec.clj` asserting that a persona name containing a dot (`"Mr. Grey"`) still resolves through `resolve-seat` and `seat-pattern`.
+- [X] T008 Grep `src/last_train/*.cljc` for other JVM-only forms (`java.`, `Long/`, `Integer/`, `format`, `.getBytes`, `Math/`) and wrap each one in `#?(:clj … :cljs …)`. If none are found, record that in the commit message.
+- [X] T009 Check the ClojureScript side without a browser. Use **nbb** (SCI on Node, the same interpreter as Scittle, with the same `:cljs` reader branch): add `bin/cljs-smoke`, which runs `npx --yes nbb@latest -cp src -e "(require '[last-train.game :as g] '[last-train.puzzles :as p]) (run! println (:output (g/start p/reference)))"`. Its output must equal the first 12 lines of `bin/last-train --seed reference </dev/null`. Also run `(g/handle state "ASK B Is D an Agent?")` to check that the `(?i)` regex works. If `parse-long`, `update-vals` or `(?i)` fail, fix them with reader conditionals in the `.cljc` files. Pin the Scittle version (latest on npm) in `research.md` R1. Add `bin/cljs-smoke` to `bb acceptance`'s preflight when `npx` is available, and print a skip notice otherwise.
 
 **Checkpoint**: `bb spec` and `bb acceptance` are green, and the core runs unchanged in the browser.
 

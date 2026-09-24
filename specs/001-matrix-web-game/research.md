@@ -16,6 +16,7 @@
   - There is no build toolchain. Publishing just copies files.
   - The constitution says "prefer Babashka", and Scittle is SCI, the interpreter Babashka runs on.
   - The code is small (~360 lines of core), so interpretation speed doesn't matter.
+- **Pinned**: Scittle **0.8.33** (npm latest on 2026-09-25). `bin/cljs-smoke` confirmed that the core runs unchanged as ClojureScript under nbb 1.x: `parse-long`, `update-vals` and `(?i)` all work, and the output is identical to the CLI.
 - **Portability fixes needed**:
   - `english.clj` calls `java.util.regex.Pattern/quote`. This becomes a `#?(:clj … :cljs …)` reader conditional, with a JS regex-escape on the cljs side.
   - `game.clj` uses the `(?i)` prefix. cljs `re-pattern` turns a leading `(?i)` into a JS flag, so no change is needed. A spec will cover it.
