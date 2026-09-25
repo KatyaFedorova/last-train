@@ -3,8 +3,8 @@
   (:require [last-train.cli :as cli]))
 
 (defn -main [& args]
-  (let [{:keys [error puzzle]} (cli/parse-args args)]
+  (let [{:keys [error seed]} (cli/parse-args args)]
     (if error
       (do (binding [*out* *err*] (println error))
           (System/exit 2))
-      (cli/play puzzle))))
+      (cli/play seed))))

@@ -18,17 +18,12 @@
   (gen/one-of [literal
                (gen/tuple (gen/elements [:and :or]) literal literal)]))
 
-(def question (gen/elements logic/questions))
-
 (def fact
   "A fact as a passenger in world w would state it."
   (fn [w] (gen/fmap (fn [[speaker p]] [speaker p (logic/can-say? w speaker p)])
                     (gen/tuple seat prop))))
 
 (def player-line
-  "Player input: well-formed commands mixed with arbitrary text."
-  (let [who (gen/elements ["A" "b" "Vera" "tomasz" "Ilse" "MR. GREY" "Neo" "you"])
-        kind (gen/elements ["the Agent" "an Agent" "human" "a dentist"])]
-    (gen/one-of [(gen/fmap (fn [[t x k]] (str "ask " t " is " x " " k "?")) (gen/tuple who who kind))
-                 (gen/fmap #(str "accuse " %) who)
-                 gen/string-ascii])))
+  "Player input: guesses, hints, timeouts and arbitrary text."
+  (gen/one-of [(gen/elements ["A" "b" "C" "d" "hint" "time" "accuse B" "Neo" "help"])
+               gen/string-ascii]))

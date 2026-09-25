@@ -60,22 +60,3 @@
 
   (it "narrows a given world set with answered facts"
     (should= [wa] (logic/consistent [[:C [:is :A :agent] true]] reference-worlds))))
-
-(describe "Questions"
-  (it "asks each speaker whether each seat is the Agent"
-    (should= 16 (count (set logic/questions)))
-    (should-contain [:B [:is :D :agent]] logic/questions)))
-
-(describe "Solvability"
-  (it "is solved when every world has the same Agent"
-    (should (logic/solvable? [wa] 0)))
-
-  (it "is not solved at depth zero with several Agent candidates"
-    (should= false (logic/solvable? reference-worlds 0)))
-
-  (it "solves the reference puzzle with one question to a trusted passenger"
-    (should (logic/solvable? reference-worlds 1)))
-
-  (it "needs two questions for three suspects"
-    (should-not (logic/solvable? [wa wb wd] 1))
-    (should (logic/solvable? [wa wb wd] 2))))

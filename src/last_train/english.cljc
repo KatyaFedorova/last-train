@@ -65,15 +65,6 @@
   [text context]
   (compound-prop (normalize text) (references context)))
 
-(defn parse-question
-  "Proposition asked by a supported yes/no question, or nil."
-  [text context]
-  (let [refs (references context)
-        ref (seat-pattern context)]
-    (when-let [[_ x k] (re-matches (re-pattern (str "(?:is|are|am) " ref " " (alternation (keys kind-words))))
-                                   (normalize text))]
-      [:is (refs x) (kind-words k)])))
-
 (defn- seat-name [seat {:keys [names self]}]
   (if (= seat self) "I" (get names seat (name seat))))
 
@@ -109,9 +100,3 @@
   "A sentence asserting prop (polarity true) or its negation."
   [prop polarity context]
   (sentence (clause (if polarity prop [:not prop]) context)))
-
-(defn render-answer [prop yes? context]
-  (str (if yes? "Yes. " "No. ") (render-statement prop yes? context)))
-
-(defn render-question [[_ x role] context]
-  (str "is " (seat-name x (dissoc context :self)) " " (kind-text role) "?"))

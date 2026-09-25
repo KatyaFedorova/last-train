@@ -40,20 +40,3 @@
                         (= asserted (can-say? world speaker prop)))
                       facts))
             worlds)))
-
-(def questions
-  "Every legal question: ask speaker whether seat is the Agent."
-  (vec (for [speaker seats seat seats]
-         [speaker [:is seat :agent]])))
-
-(defn solvable? [worlds depth]
-  (cond
-    (<= (count (agent-seats worlds)) 1) true
-    (zero? depth) false
-    :else (boolean
-            (some (fn [[speaker prop]]
-                    (let [{yes true no false} (group-by #(can-say? % speaker prop) worlds)]
-                      (and yes no
-                           (solvable? yes (dec depth))
-                           (solvable? no (dec depth)))))
-                  questions))))

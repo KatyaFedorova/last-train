@@ -1,6 +1,6 @@
 # last-train-matrix-game
 
-> **Current rules (easy mode).** The shipped game was simplified from the design below. There are no Awake or Sleeper roles: one Agent always lies and the other three passengers are humans who always tell the truth (4 possible worlds). The only question is "Is X the Agent?". The opening leaves 2 or 3 suspects and two questions always suffice; the player gets three. Score = 100 for the Agent + 25 per unused question. There are no rounds and no ally bonus. The web page has Ask/Accuse buttons on each passenger. The rest of this document is the original, harder design.
+> **Current rules (quick mode).** The shipped game was simplified from the design below. There are no Awake or Sleeper roles and no questions: one Agent always lies and the other three passengers are humans who always tell the truth (4 possible worlds). Each train's four lines leave exactly one possible Agent, and the player names it with one key (A–D) within 20 seconds. A run is 10 generated trains (3 plain, then lines with "or"). Score = 100 per right answer + 5 per second left; one hint per run names an honest passenger; a wrong answer shows why. The rest of this document is the original, harder design.
 
 LAST TRAIN — a Matrix-style logic game
 

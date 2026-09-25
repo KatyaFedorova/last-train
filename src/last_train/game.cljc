@@ -1,92 +1,136 @@
 (ns last-train.game
-  "Pure game loop: questions, accusation and score, with template voices."
+  "Pure game loop: a run of generated trains. On each train the player reads
+  four lines and names the Agent with one key. A wrong answer or a timeout
+  shows why; one hint per run names an honest passenger."
   (:require [clojure.string :as str]
             [last-train.english :as english]
-            [last-train.logic :as logic]))
+            [last-train.logic :as logic]
+            [last-train.puzzles :as puzzles]))
 
-(def ^:private noisy "Operator: \"Signal's noisy. Rephrase.\"")
+(def trains 10)
+(def seconds-per-train 20)
 
-(def syntax "Ask: ask <passenger> Is <passenger> the Agent?   Accuse: accuse <passenger>")
+(def prompt "Who is the Agent? Press A, B, C or D.")
+(def ^:private noisy "Operator: \"Signal's noisy. Press A, B, C or D, or type hint.\"")
 
-(defn- english-context
-  "English context for the puzzle's personas, with self as I/me/you when given."
-  ([state] (english-context state nil))
-  ([state self] {:names (update-vals (get-in state [:puzzle :personas]) :name) :self self}))
+(defn- names [puzzle] (update-vals (:personas puzzle) :name))
 
 (defn- persona-name [state seat]
   (get-in state [:puzzle :personas seat :name]))
 
-(defn- say [state seat line]
-  (str (persona-name state seat) " (" (name seat) "): \"" line "\""))
+(defn- line-of
+  "What seat said on this train, as the player reads it."
+  [puzzle seat]
+  (let [[_ prop polarity] (first (filter #(= seat (first %)) (:opening puzzle)))]
+    (english/render-statement prop polarity {:names (names puzzle) :self seat})))
 
-(defn- questions-banner [{:keys [questions-left]}]
-  (if (pos? questions-left)
-    [(str "Questions left: " questions-left)]
-    ["No questions left. Who is the Agent? accuse <passenger>"]))
+(defn lines
+  "Seat -> the line that passenger says on the current train."
+  [state]
+  (into {} (for [seat logic/seats] [seat (line-of (:puzzle state) seat)])))
 
-(defn- boarding-lines [state]
-  (for [[seat prop polarity] (get-in state [:puzzle :opening])]
-    (say state seat (english/render-statement prop polarity (english-context state seat)))))
+(defn agent-seat [state]
+  (logic/agent-seat (get-in state [:puzzle :true-world])))
 
-(defn start [puzzle]
-  (let [state {:puzzle puzzle
-               :questions-left 3
-               :facts (:opening puzzle)
-               :live-worlds (logic/consistent (:opening puzzle))
-               :over? false}]
+(defn- train-lines [state]
+  (concat [(str "Train " (:train state) " of " trains)]
+          (for [seat logic/seats]
+            (str (persona-name state seat) " (" (name seat) "): \"" ((lines state) seat) "\""))
+          [prompt]))
+
+(defn- deal [state]
+  (let [[puzzle seed] (puzzles/generate (:seed state) (puzzles/level (:train state)))]
+    (assoc state :puzzle puzzle :seed seed)))
+
+(defn start
+  "A new run from an integer seed."
+  [seed]
+  (let [state (deal {:seed (puzzles/seed seed)
+                     :train 1
+                     :right 0
+                     :score 0
+                     :hint? true
+                     :over? false})]
     {:state state
      :output (concat ["LAST TRAIN"
-                      "Operator: \"One passenger is an Agent. The Agent always lies. Everyone else tells the truth. Find the Agent.\""]
-                     (boarding-lines state)
-                     (questions-banner state)
-                     [syntax])}))
+                      "Operator: \"One passenger on each train is the Agent. The Agent lies. Everyone else tells the truth.\""]
+                     (train-lines state))}))
 
-(defn score [win? unused-questions]
-  (if win? (+ 100 (* 25 unused-questions)) 0))
+(defn points
+  "Points for a right answer with seconds-left on the clock (nil without a clock)."
+  [seconds-left]
+  (+ 100 (* 5 (or seconds-left 0))))
 
-(defn- find-seat [state who]
-  (english/resolve-seat who (english-context state)))
+(defn- why-not
+  "Why guess cannot be the Agent on this train."
+  [state guess]
+  (let [puzzle (:puzzle state)
+        pretend (puzzles/world guess)
+        liars (for [[speaker prop polarity] (:opening puzzle)
+                    :when (and (not= speaker guess)
+                               (not= polarity (logic/can-say? pretend speaker prop)))]
+                speaker)
+        liar (first (sort-by #(= % (agent-seat state)) liars))]
+    (if liar
+      (str "If " (persona-name state guess) " were the Agent, " (persona-name state liar)
+           " would be lying as well, and only one passenger lies.")
+      (str (persona-name state guess) " told the truth, and the Agent never does."))))
 
-(defn- reject [state]
-  {:state state :output [noisy (str "Questions left: " (:questions-left state))]})
+(defn- the-lie [state]
+  (let [agent (agent-seat state)]
+    (str (persona-name state agent) "'s line was the lie: \"" ((lines state) agent) "\"")))
 
-(defn- ask [state target question]
-  (if-let [prop (english/parse-question question (english-context state target))]
-    (let [yes? (logic/can-say? (get-in state [:puzzle :true-world]) target prop)
-          fact [target prop yes?]
-          state (-> state
-                    (update :facts conj fact)
-                    (update :live-worlds #(logic/consistent [fact] %))
-                    (update :questions-left dec))]
-      {:state state
-       :output (cons (say state target (english/render-answer prop yes? (english-context state target)))
-                     (questions-banner state))})
-    (reject state)))
+(defn- finish-train
+  "Record the answer (guess is nil on a timeout), then deal the next train or end the run."
+  [state guess seconds-left]
+  (let [agent (agent-seat state)
+        right? (= agent guess)
+        gained (if right? (points seconds-left) 0)
+        verdict (cond
+                  right? (str "Right! " (persona-name state agent) " is the Agent. +" gained)
+                  guess (str "Wrong. " (why-not state guess) " " (the-lie state))
+                  :else (str "Time's up! " (the-lie state)))
+        state (-> state
+                  (update :right + (if right? 1 0))
+                  (update :score + gained)
+                  (assoc :last {:guess guess :agent agent :right? right?}))]
+    (if (< (:train state) trains)
+      (let [state (deal (update state :train inc))]
+        {:state state :output (cons verdict (train-lines state))})
+      {:state (assoc state :over? true)
+       :output [verdict
+                (str "Run over: " (:right state) " of " trains " right.")
+                (str "Score: " (:score state))
+                "GAME OVER"]})))
 
-(defn- accuse [state seat]
-  (let [agent (logic/agent-seat (get-in state [:puzzle :true-world]))
-        win? (= agent seat)
-        outcome {:win? win? :score (score win? (:questions-left state))}]
-    {:state (assoc state :over? true :outcome outcome)
-     :output [(if win?
-                (str "You pull the emergency brake. " (persona-name state agent)
-                     "'s face flickers... and the Agent is gone. WIN")
-                (str "Wrong passenger. " (persona-name state agent)
-                     " stands up and adjusts its tie: \"Mister... Anderson.\" LOSE"))
-              (str "Score: " (:score outcome))
-              "GAME OVER"]}))
+(defn- hint [state]
+  (if (:hint? state)
+    (let [agent (agent-seat state)
+          honest (remove #{agent} logic/seats)
+          about-agent (filter (fn [seat] (some #(and (= seat (first %)) (some #{agent} (flatten (second %))))
+                                               (get-in state [:puzzle :opening])))
+                              honest)
+          seat (first (concat about-agent honest))]
+      {:state (assoc state :hint? false)
+       :output [(str "Operator: \"Tip: " (persona-name state seat) " is telling the truth.\"")]})
+    {:state state :output ["Operator: \"No hints left on this run.\""]}))
+
+(defn- guessed-seat
+  "Seat named by input: a seat letter, a name, or accuse/arrest/blame plus either."
+  [state input]
+  (let [who (-> input str/trim (str/replace #"[.!?]+$" "")
+                (str/replace #"(?i)^(?:accuse|arrest|blame)\s+" ""))]
+    (english/resolve-seat who {:names (names (:puzzle state))})))
 
 (defn handle
-  "Advance the game by one line of player input."
-  [state input]
-  (let [who (english/seat-pattern (english-context state))
-        input (str/trim input)]
-    (if (:over? state)
-      {:state state :output ["The game is over."]}
-      (if-let [[_ seat] (re-matches (re-pattern (str "(?i)accuse " who)) input)]
-        (accuse state (find-seat state seat))
-        (if-let [[_ target question] (re-matches (re-pattern (str "(?i)ask " who ",? (.+)")) input)]
-          (if (zero? (:questions-left state))
-            {:state state :output ["Operator: \"No more questions. Accuse the Agent.\""]}
-            (ask state (find-seat state target) question))
-          (update (reject state) :output conj syntax))))))
+  "Advance the run by one line of player input. opts may carry :seconds-left."
+  ([state input] (handle state input {}))
+  ([state input {:keys [seconds-left]}]
+   (let [command (str/lower-case (str/trim input))]
+     (cond
+       (:over? state) {:state state :output ["The run is over."]}
+       (= "time" command) (finish-train state nil nil)
+       (= "hint" command) (hint state)
+       :else (if-let [seat (guessed-seat state input)]
+               (finish-train state seat seconds-left)
+               {:state state :output [noisy]})))))

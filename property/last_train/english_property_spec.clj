@@ -32,15 +32,6 @@
                        (let [parsed (english/parse-prop (english/render-statement p polarity ctx) ctx)]
                          (and parsed (equivalent? parsed (if polarity p [:not p]))))))))
 
-  (it "reads back every rendered question as the asked proposition"
-    (should (passes? (prop/for-all [[_ p] g/question ctx gen-context]
-                       (= p (english/parse-question (english/render-question p ctx) (dissoc ctx :self)))))))
-
-  (it "answers agree with the rendered statement"
-    (should (passes? (prop/for-all [p g/prop yes? gen/boolean ctx gen-context]
-                       (= (english/render-answer p yes? ctx)
-                          (str (if yes? "Yes. " "No. ") (english/render-statement p yes? ctx)))))))
-
   (it "resolves a seat however its name is cased or padded"
     (should (passes? (prop/for-all [seat g/seat upper? gen/boolean pad (gen/elements ["" " " "  "])]
                        (let [n (get names seat)]

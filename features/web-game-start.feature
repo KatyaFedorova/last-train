@@ -1,9 +1,8 @@
-# Scenario: Web game start 01 - the browser page starts a playable reference game
+# Scenario: Web game start 01 - a seeded link starts a playable run
 Feature: Web game start
-  Scenario: Web game start 01 - the browser page starts a playable reference game
-    Given I open a new reference game in the web page
-    Then I see the four passenger opening statements
-    And I see that 3 questions remain
+  Scenario: Web game start 01 - a seeded link starts a playable run
+    Given I open the web page for seed 42
+    Then I see the four passenger lines
+    And I see "Train 1 of 10"
     And I do not see the passengers' true roles
-    And I can ask or accuse each passenger with a button
-    And I can type a question or an accusation at the prompt
+    And I can tap each passenger or press their letter

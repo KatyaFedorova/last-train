@@ -6,65 +6,68 @@
 
 (def reserved-words #{"a" "b" "c" "d" "i" "me" "you"})
 
-(defn- with-opening [puzzle opening]
-  (assoc puzzle :opening opening))
+(defn- puzzles-from [n level]
+  (map first (take n (iterate (fn [[_ s]] (puzzles/generate s level))
+                              (puzzles/generate (puzzles/seed n) level)))))
 
-(describe "Puzzle catalog"
-  (it "has at least five uniquely named puzzles including the reference"
-    (let [names (map :name puzzles/catalog)]
-      (should (<= 5 (count names)))
+(describe "Personas"
+  (it "have distinct names that are not seat letters or pronouns"
+    (let [names (map (comp str/lower-case :name) puzzles/personas)]
       (should= (count names) (count (set names)))
-      (should-contain "reference" names)))
+      (should-not (some reserved-words names)))))
 
-  (it "finds puzzles by name"
-    (should= puzzles/reference (puzzles/by-name "reference"))
-    (should-be-nil (puzzles/by-name "nope"))
-    (should-be-nil (puzzles/by-name nil)))
+(describe "Seeds"
+  (it "turn any integer into a generator seed"
+    (doseq [n [0 1 42 -7 999999999]]
+      (should (< 0 (puzzles/seed n) 2147483647))))
 
-  (it "keeps the reference puzzle's Agent and personas"
-    (should= {:A :agent :B :human :C :human :D :human} (:true-world puzzles/reference))
-    (should= "Mr. Grey" (get-in puzzles/reference [:personas :D :name])))
+  (it "replay the same puzzle"
+    (should= (puzzles/generate (puzzles/seed 42) 1) (puzzles/generate (puzzles/seed 42) 1)))
 
-  (it "only ships puzzles that follow the puzzle rules"
-    (doseq [puzzle puzzles/catalog]
-      (should (puzzles/valid? puzzle))))
+  (it "differ for different numbers"
+    (should-not= (first (puzzles/generate (puzzles/seed 1) 1)) (first (puzzles/generate (puzzles/seed 2) 1)))))
 
-  (it "gives every passenger a distinct name that is not a seat letter or pronoun"
-    (doseq [{:keys [personas]} puzzles/catalog]
-      (let [names (map (comp str/lower-case :name) (vals personas))]
-        (should= 4 (count (set names)))
-        (should-not (some reserved-words names)))))
+(describe "Generated puzzles"
+  (it "leave exactly one possible Agent, the true one"
+    (doseq [level [1 2] puzzle (puzzles-from 60 level)]
+      (should (puzzles/valid? puzzle))
+      (should= [(:true-world puzzle)] (logic/consistent (:opening puzzle)))))
 
-  (it "puts the Agent in every seat somewhere in the catalog"
-    (should= logic/seats (logic/agent-seats (map :true-world puzzles/catalog)))))
+  (it "give four different passengers one line each"
+    (doseq [puzzle (puzzles-from 30 1)]
+      (should= logic/seats (map first (:opening puzzle)))
+      (should= 4 (count (set (map :name (vals (:personas puzzle))))))))
+
+  (it "use only 'is the Agent' lines on level 1 and at least one 'or' line on level 2"
+    (doseq [puzzle (puzzles-from 30 1)]
+      (should (every? (fn [[_ [op]]] (= :is op)) (:opening puzzle))))
+    (doseq [puzzle (puzzles-from 30 2)]
+      (should (some (fn [[_ [op]]] (= :or op)) (:opening puzzle)))))
+
+  (it "put the Agent in every seat"
+    (should= logic/seats (logic/agent-seats (map :true-world (puzzles-from 60 1))))))
 
 (describe "Puzzle rules"
-  (it "accepts the reference puzzle"
-    (should (puzzles/valid? puzzles/reference)))
+  (it "reject a puzzle that leaves two suspects"
+    (should-not (puzzles/valid? {:true-world (puzzles/world :A)
+                                 :opening [[:A [:is :B :agent] true]
+                                           [:B [:is :A :agent] true]
+                                           [:C [:is :C :agent] false]
+                                           [:D [:is :D :agent] false]]})))
 
-  (it "rejects a puzzle whose true world contradicts its opening"
-    (should-not (puzzles/valid? (assoc puzzles/reference :true-world
-                                       {:A :human :B :human :C :human :D :agent}))))
+  (it "reject a puzzle whose true world contradicts its opening"
+    (should-not (puzzles/valid? {:true-world (puzzles/world :B)
+                                 :opening [[:A [:is :B :agent] true]
+                                           [:B [:is :A :agent] true]
+                                           [:C [:is :A :agent] true]
+                                           [:D [:is :D :agent] false]]})))
 
-  (it "rejects a puzzle already solved at boarding"
-    (let [opening [[:A [:is :B :agent] true]
-                   [:B [:is :A :agent] true]
-                   [:C [:is :A :agent] true]
-                   [:D [:is :D :agent] false]]]
-      (should= [:A] (logic/agent-seats (logic/consistent opening)))
-      (should-not (puzzles/valid? (with-opening puzzles/reference opening)))))
+  (it "accept a puzzle with one suspect"
+    (should (puzzles/valid? {:true-world (puzzles/world :A)
+                             :opening [[:A [:is :B :agent] true]
+                                       [:B [:is :A :agent] true]
+                                       [:C [:is :A :agent] true]
+                                       [:D [:is :D :agent] false]]})))
 
-  (it "rejects a puzzle that leaves every passenger a suspect"
-    (let [opening (vec (for [seat logic/seats] [seat [:is seat :agent] false]))]
-      (should= 4 (count (logic/consistent opening)))
-      (should-not (puzzles/valid? (with-opening puzzles/reference opening))))))
-
-(describe "Picking a puzzle"
-  (it "never repeats the puzzle just played"
-    (doseq [draw (range 50)]
-      (should-not= "reference" (:name (puzzles/pick (fn [n] (mod draw n)) "reference")))))
-
-  (it "can pick any puzzle when nothing was played"
-    (should= (set (map :name puzzles/catalog))
-             (set (for [draw (range (count puzzles/catalog))]
-                    (:name (puzzles/pick (fn [_] draw) nil)))))))
+  (it "start with three easy trains"
+    (should= [1 1 1 2 2 2 2 2 2 2] (map puzzles/level (range 1 11)))))

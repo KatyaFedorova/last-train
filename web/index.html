@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
-  <meta name="description" content="LAST TRAIN: find the Agent on the last train through the Matrix.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LAST TRAIN: one passenger lies. Find the Agent before the next stop.">
   <meta name="color-scheme" content="dark">
   <title>LAST TRAIN</title>
   <link rel="stylesheet" href="terminal.css">
@@ -16,38 +16,26 @@
       <button id="rules-toggle" type="button" aria-controls="rules" aria-expanded="false" title="Rules">?</button>
     </header>
     <section id="rules" hidden aria-label="Rules">
-      <p>Four passengers. <b>One of them is the Agent.</b> Find it.</p>
+      <p>Each train has four passengers. <b>One of them is the Agent.</b></p>
       <ul>
         <li>The <b>Agent always lies</b>.</li>
-        <li>Everyone else is human and <b>always tells the truth</b>.</li>
+        <li>Everyone else <b>always tells the truth</b>.</li>
       </ul>
-      <p>Read what each passenger says. You can ask <b>3 questions</b>, then accuse.</p>
-      <p>Tip: if two passengers point at each other, one of them is lying. Ask someone you trust.</p>
-      <p>Tap <b>Ask</b> or <b>Accuse</b> on a passenger, or type:</p>
-      <pre>ask B Is D the Agent?
-accuse A
-help                new</pre>
-      <p>Score: 100 for the Agent + 25 per unused question.</p>
+      <p>Read the four lines. Only one passenger can be the Agent. Tap them or press their letter: <b>A, B, C or D</b>.</p>
+      <p>Tip: if two passengers contradict each other, one of them is the Agent, so the other two are honest.</p>
+      <p>You have <b>20 seconds</b> per train, 10 trains per run. Right answer: 100 points + 5 per second left. <b>H</b> gives one tip per run.</p>
     </section>
-    <div id="transcript" role="log" aria-live="polite" aria-label="Transcript"></div>
+    <div id="status" aria-live="polite"></div>
+    <div id="timer" aria-hidden="true"><div id="timer-fill"></div></div>
     <section id="board" aria-label="Passengers"></section>
-    <div id="picker" aria-live="polite"></div>
-    <form id="prompt" autocomplete="off">
-      <span class="caret" aria-hidden="true">&gt;</span>
-      <span class="field">
-        <input id="command" type="text" aria-label="Command"
-               autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
-               enterkeyhint="send" placeholder="or type: ask B Is D the Agent?">
-        <span id="cursor" aria-hidden="true"></span>
-      </span>
-    </form>
+    <div id="result" aria-live="polite"></div>
     <noscript><p class="line system">LAST TRAIN needs JavaScript enabled.</p></noscript>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/scittle@0.8.33/dist/scittle.js"></script>
   <script type="application/x-scittle" src="last_train/logic.cljc"></script>
   <script type="application/x-scittle" src="last_train/english.cljc"></script>
-  <script type="application/x-scittle" src="last_train/game.cljc"></script>
   <script type="application/x-scittle" src="last_train/puzzles.cljc"></script>
+  <script type="application/x-scittle" src="last_train/game.cljc"></script>
   <script type="application/x-scittle" src="last_train/terminal.cljc"></script>
   <script type="application/x-scittle" src="terminal.cljs"></script>
 </body>

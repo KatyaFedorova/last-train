@@ -1,9 +1,7 @@
-# Scenario: Web game win 01 - accusing the Agent after one question wins
+# Scenario: Web game win 01 - a fast right answer earns a time bonus
 Feature: Web game win
-  Scenario: Web game win 01 - accusing the Agent after one question wins
-    Given I have started a reference game in the web page
-    When I ask passenger C "Is A the Agent?"
-    And I accuse passenger A
-    Then I see "WIN"
-    And the score is 150
-    And the game is over
+  Scenario: Web game win 01 - a fast right answer earns a time bonus
+    Given I open the web page for seed 42
+    When I name the Agent with 12 seconds left
+    Then I see "Right!"
+    And I see "+160"

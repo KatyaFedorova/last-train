@@ -1,59 +1,39 @@
 (ns last-train.acceptance.transcript
   "Reading game transcript lines, shared by the terminal and web step handlers."
   (:require [clojure.string :as str]
-            [last-train.acceptance.engine-steps :as engine]
             [last-train.acceptance.runtime :refer [check]]
-            [last-train.english :as english]))
+            [last-train.english :as english]
+            [last-train.logic :as logic]))
 
 (def ^:private statement-line #"^(.+) \(([A-D])\): \"(.*)\"$")
 
 (defn statements [lines]
   (keep #(re-matches statement-line %) lines))
 
-(defn questions-left [lines]
-  (some->> lines
-           (keep #(second (re-matches #"^Questions left: (\d+)$" %)))
-           last
-           parse-long))
-
-(defn answers-of
-  "Yes/no answers (true/false) given by seat in lines, in order."
-  [lines seat]
-  (keep (fn [line]
-          (when-let [[_ _ speaker answer] (re-matches #"^(.+) \(([A-D])\): \"(Yes|No)\. .*\"$" line)]
-            (when (= seat speaker) (= "Yes" answer))))
-        lines))
-
-(defn check-reference-statements
-  "The statements in lines convey exactly the reference opening statements."
+(defn conveyed-facts
+  "The [seat prop true] facts the last four statement lines convey."
   [lines]
-  (let [shown (statements lines)
-        names (into {} (for [[_ persona seat] shown] [(keyword seat) persona]))
-        conveyed (set (for [[_ _ seat line] shown]
-                        [(keyword seat) (english/parse-prop line {:names names :self (keyword seat)})]))
-        expected (set (for [[speaker text polarity] engine/reference-statements]
-                        (let [p (engine/prop text)] [(engine/seat speaker) (if polarity p [:not p])])))]
-    (check (= expected conveyed) (str "Statements conveyed " conveyed))))
+  (let [shown (take-last 4 (statements lines))
+        names (into {} (for [[_ persona seat] shown] [(keyword seat) persona]))]
+    (vec (for [[_ _ seat line] shown]
+           (let [prop (english/parse-prop line {:names names :self (keyword seat)})]
+             (check prop (str "Unreadable line: " line))
+             [(keyword seat) prop true])))))
+
+(defn check-one-agent [lines]
+  (let [worlds (logic/consistent (conveyed-facts lines))]
+    (check (= 1 (count worlds)) (str "The lines leave " (count worlds) " possible worlds"))))
 
 (defn check-no-roles [lines]
   (let [text (str/join "\n" lines)]
-    (check (not (re-find #"AGENT|HUMAN|:agent|:human" text)) "Role tokens displayed")
-    (check (not-any? #(and (not (re-matches statement-line %)) (re-find #"(?i)is the agent" %)) lines)
-           "The game itself names the Agent")))
-
-(defn check-questions-left [lines n]
-  (check (= (parse-long n) (questions-left lines)) (str "Questions left: " (questions-left lines))))
+    (check (not (re-find #"AGENT|HUMAN|:agent|:human|true-world" text)) "Role tokens displayed")
+    (check (not (re-find #"(?m)^(?:Right!|Wrong\.|Time's up!)" text)) "An answer is shown before any guess")))
 
 (defn check-see
   "Text appears in the recent lines."
   [recent text]
   (check (str/includes? (str/join "\n" recent) text)
          (str "Did not see " (pr-str text) " in " (vec recent))))
-
-(defn check-answer
-  "Seat gave exactly one answer in the recent lines, and it was expected (yes/no)."
-  [recent seat expected]
-  (check (= [(engine/yes-no expected)] (answers-of recent seat)) (str "Answer lines: " (vec recent))))
 
 (defn check-score [recent score]
   (check (some #{(str "Score: " score)} recent) (str "Output: " (vec recent))))

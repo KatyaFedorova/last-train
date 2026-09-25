@@ -1,22 +1,20 @@
-# Scenario: Web game terminal 01 - an unrecognised command shows the command syntax
-# Scenario: Web game terminal 02 - new starts a different puzzle
-# Scenario: Web game terminal 03 - an unknown puzzle link boards a random train
+# Scenario: Web game terminal 01 - unrecognised input is noise
+# Scenario: Web game terminal 02 - new starts a fresh run
+# Scenario: Web game terminal 03 - a link without a usable seed boards a random run
 Feature: Web game terminal
-  Scenario: Web game terminal 01 - an unrecognised command shows the command syntax
-    Given I have started a reference game in the web page
+  Scenario: Web game terminal 01 - unrecognised input is noise
+    Given I open the web page for seed 42
     When I type "hello" at the prompt
-    Then I see "Signal's noisy. Rephrase."
-    And I see "Accuse: accuse <passenger>"
-    And I see that 3 questions remain
+    Then I see "Signal's noisy."
+    And I am still on train 1
 
-  Scenario: Web game terminal 02 - new starts a different puzzle
-    Given I have started a reference game in the web page
-    When I accuse passenger D
+  Scenario: Web game terminal 02 - new starts a fresh run
+    Given I open the web page for seed 42
+    When I name the Agent
     And I type "new" at the prompt
-    Then a different puzzle starts
-    And I see that 3 questions remain
+    Then I see "Train 1 of 10"
+    And I am still on train 1
 
-  Scenario: Web game terminal 03 - an unknown puzzle link boards a random train
-    Given I open the web page for the puzzle named "nope"
-    Then I see that 3 questions remain
-    And I see "Unknown puzzle "nope". Boarding a random train."
+  Scenario: Web game terminal 03 - a link without a usable seed boards a random run
+    Given I open the web page for seed "nope"
+    Then I see "Train 1 of 10"

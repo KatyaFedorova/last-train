@@ -5,20 +5,20 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 script='
-(require (quote [last-train.terminal :as t]) (quote [last-train.puzzles :as p]))
-(doseq [{:keys [name]} p/catalog]
+(require (quote [last-train.terminal :as t]) )
+(doseq [seed [1 42 777]]
   (let [draw (fn [_] 0)
         s (reduce #(t/submit %1 %2 draw)
-                  (t/boot {:puzzle-param name :rand-int draw})
-                  ["hello" "help" "ASK B Is D the Agent?" "ask A, is C human?"
-                   "accuse A" "new"])]
+                  (t/boot {:seed-param (str seed) :rand-int draw})
+                  ["hello" "help" "hint" "b" "time" "accuse A" "hint" "C"
+                   "new" "d"])]
     (doseq [{:keys [text kind]} (:lines s)] (println kind text))))'
 
 cljs=$(npx --yes nbb@1 -cp src -e "$script")
 clj=$(bb -cp src -e "$script")
 
 if [[ "$cljs" == "$clj" ]]; then
-  echo "cljs-smoke: ClojureScript session matches Babashka ($(printf '%s\n' "$clj" | wc -l | tr -d ' ') lines, all puzzles)"
+  echo "cljs-smoke: ClojureScript session matches Babashka ($(printf '%s\n' "$clj" | wc -l | tr -d ' ') lines, three seeds)"
 else
   echo "cljs-smoke: ClojureScript session differs from Babashka" >&2
   diff <(printf '%s\n' "$cljs") <(printf '%s\n' "$clj") >&2 || true

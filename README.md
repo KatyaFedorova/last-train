@@ -1,23 +1,21 @@
 # LAST TRAIN
 
-A deterministic, text based logic game set on a late night subway inside the Matrix. Four passengers are aboard, and one of them is the Agent. The Agent always lies; everyone else always tells the truth. Read what they say, ask up to three yes or no questions, and find the Agent.
+A fast, deterministic logic game set on a late night subway inside the Matrix. Each train has four passengers, and one of them is the Agent. The Agent always lies; everyone else always tells the truth. Read their four lines and name the Agent before the clock runs out.
 
 **Play it now: <https://katyafedorova.github.io/last-train/>**
 
 ## How to play
 
-In the browser, tap **Ask** or **Accuse** on a passenger. You can also just start typing: every key goes to the prompt, no click needed.
+- Each train shows four passengers, one line each. The lines leave exactly one possible Agent.
+- Tap the Agent or press their letter: **A**, **B**, **C** or **D**. You have 20 seconds.
+- Wrong answer or time up: the game shows why and which line was the lie.
+- A run is 10 trains. The first 3 are easy; later trains add lines like "Vera or Ilse is the Agent."
+- **H** gives one tip per run (it names an honest passenger). **Enter** goes to the next train.
+- Score: 100 per right answer, plus 5 per second left on the clock.
 
-| Command | What it does |
-|---------|--------------|
-| `ask B Is D the Agent?` | Ask a passenger a yes or no question (costs one of your 3 questions) |
-| `accuse A` | Accuse the Agent. This ends the game |
-| `help` | Show the command syntax (web) |
-| `new` | Start a new game with a different puzzle (web) |
+Tip: if two passengers contradict each other, one of them is the Agent, so the other two are honest.
 
-Passengers can be named by seat letter (`A`–`D`) or by name. Tip: if two passengers accuse each other, one of them is the liar, so ask someone else.
-
-Score: 100 for the right Agent, plus 25 for each unused question.
+In the terminal, type a letter, a name, `accuse <name>`, `hint`, or `time` (give up on this train).
 
 ## Play in the browser locally
 
@@ -28,18 +26,18 @@ bin/last-train-web            # builds build/site/ and serves http://localhost:8
 bin/last-train-web --port 9000
 ```
 
-Open `http://localhost:8080/?puzzle=reference` to play a specific puzzle. The puzzles are `reference`, `commuters`, `night-shift`, `terminus` and `red-eye`. Without `?puzzle=`, a random one is picked.
+Open `http://localhost:8080/?seed=42` to replay a specific run. Without `?seed=`, the run is random.
 
 The page is static: `web/` plus the shared game core in `src/last_train/*.cljc`, run in the browser by [Scittle](https://github.com/babashka/scittle). The browser runs the exact same rules as the terminal game.
 
 ## Play in a terminal
 
 ```sh
-bin/last-train --seed reference --voices=template
+bin/last-train --seed 42
 bin/last-train --seed random
 ```
 
-`--seed` accepts any puzzle name, or `random`. The default is `reference`.
+`--seed` accepts a number (the same number replays the same run) or `random`, the default.
 
 ## Development
 
@@ -56,12 +54,11 @@ bb acceptance-spec   # specs for the acceptance runtime and scripts
 bb hardening         # focused hardening specs
 bb property          # property tests (kept out of the other runs)
 bb site              # build the static site into build/site/
-bb puzzle-search B   # find opening statements for a new puzzle (Agent in seat B)
 ```
 
-A new puzzle must pass `puzzles/valid?`: the opening statements leave 2 or 3 suspects, and two questions always find the Agent. It then goes into `catalog` in `src/last_train/puzzles.cljc` and into the examples in `features/puzzle-catalog.feature`.
+Trains are generated, not hand-written: `puzzles/generate` picks four passengers from `puzzles/personas` and draws lines until `puzzles/valid?` holds (the lines leave exactly one possible Agent). A seeded Park-Miller generator makes runs replay identically in Babashka and in the browser.
 
-The logic engine is deterministic and does not call an LLM. See [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) for the game rules and the reference puzzle.
+The logic engine is deterministic and does not call an LLM. See [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) for the original design. The shipped rules are summarised at its top.
 
 ## Deployment
 

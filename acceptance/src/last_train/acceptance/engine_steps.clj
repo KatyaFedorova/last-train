@@ -3,15 +3,15 @@
   (:require [clojure.string :as str]
             [last-train.acceptance.runtime :refer [check]]
             [last-train.english :as english]
-            [last-train.logic :as logic]
-            [last-train.puzzles :as puzzles]))
+            [last-train.game :as game]
+            [last-train.logic :as logic]))
 
 (def reference-statements
   "The reference opening statements, as written in the reference-puzzle feature."
   [["A" "B is the Agent" true]
    ["B" "A is the Agent" true]
-   ["C" "C is the Agent" false]
-   ["D" "C is the Agent" false]])
+   ["C" "A is the Agent" true]
+   ["D" "D is the Agent" false]])
 
 (defn seat [text]
   (let [seat (keyword (str/trim text))]
@@ -79,13 +79,6 @@
          (str "Answer was " (if (:answer world) "yes" "no")))
   world)
 
-(defn- check-answer-about [world speaker expected target]
-  (let [[asked prop answer] (peek (:answers world))]
-    (check (= (seat speaker) asked) (str "Last question went to " asked))
-    (check (some #{(seat target)} (flatten prop)) (str "Last question was about " prop))
-    (check (= (yes-no expected) answer) (str "Answer was " (if answer "yes" "no")))
-    world))
-
 (defn check-agent-seats [worlds expected]
   (check (= (seat-list expected) (logic/agent-seats worlds))
          (str "Possible Agent seats were " (mapv name (logic/agent-seats worlds)))))
@@ -120,7 +113,7 @@
   (check (seq (:evaluations world)) "Nothing was evaluated")
   world)
 
-(def ^:private question-props (distinct (map second logic/questions)))
+(def ^:private question-props (for [seat logic/seats] [:is seat :agent]))
 
 (defn- agent-and-human-answers [world]
   (assoc world :answer-pairs
@@ -138,38 +131,34 @@
   (let [facts (reference-facts)]
     (assoc world :facts facts :worlds (logic/consistent facts))))
 
-(defn- reference-worlds [world]
-  (let [world (reference-opening world)]
-    (check (= 2 (count (:worlds world))) "Reference opening did not leave two worlds")
-    world))
+(defn- run-trains [seed]
+  (->> (iterate (fn [state] (:state (game/handle state "time"))) (:state (game/start seed)))
+       (take game/trains)
+       (mapv :puzzle)))
 
-(defn- named-puzzle [world name]
-  (let [puzzle (puzzles/by-name name)]
-    (check puzzle (str "No puzzle named " (pr-str name)))
-    (assoc world :puzzle puzzle)))
+(defn- seeded-run [world seed]
+  (assoc world :trains (run-trains (parse-long seed))))
 
-(defn- check-puzzle-rules [world]
-  (check (puzzles/valid? (:puzzle world)) (str (pr-str (:name (:puzzle world))) " breaks the puzzle rules"))
+(defn- check-run-puzzles [world]
+  (check (= game/trains (count (:trains world))) "The run is not ten trains long")
+  (doseq [puzzle (:trains world)]
+    (check (= [(:true-world puzzle)] (logic/consistent (:opening puzzle)))
+           (str "A train leaves more than one suspect: " (:opening puzzle))))
   world)
 
-(defn- pick-next [world]
-  (let [draws (range (count puzzles/catalog))]
-    (assoc world :picked (set (map #(:name (puzzles/pick (fn [n] (mod % n)) (:name (:puzzle world)))) draws)))))
-
-(defn- check-not-picked [world name]
-  (check (not (contains? (:picked world) name)) (str "A new game can pick " (pr-str name) " again"))
+(defn- check-replay [world seed]
+  (check (= (:trains world) (run-trains (parse-long seed))) "The run did not replay")
   world)
 
 (def handlers
-  [[#"^(?:the|I just played the) puzzle named \"(.+)\"$" named-puzzle]
-   [#"^the puzzle follows the puzzle rules$" check-puzzle-rules]
-   [#"^a new game picks a puzzle$" pick-next]
-   [#"^it is not \"(.+)\"$" check-not-picked]
+  [[#"^the run seeded (\S+)$" seeded-run]
+   [#"^every train of the run leaves exactly one possible Agent$" check-run-puzzles]
+   [#"^a second run seeded (\d+) deals the same trains$" check-replay]
    [#"^the (?:true )?passenger world is A=([^,\s]+), B=([^,\s]+), C=([^,\s]+), D=([^,\s]+)$" set-passenger-world]
    [#"^the world has exactly (\d+) Agent and (\d+) humans$" check-composition]
    [#"^the (\d+) possible passenger worlds$" all-worlds]
    [#"^the answer is (\S+)$" check-answer]
-   [#"^(\S+) answers (\S+) about (\S+)$" check-answer-about]
+   [#"^I ask passenger (\S+) whether (.+)$" ask-engine]
    [#"^I evaluate Is, Not, And, and Or propositions in each world$" evaluate-props]
    [#"^each proposition has its ordinary boolean value in that world$" check-evaluations]
    [#"^the Agent and a human passenger answer the same supported proposition in each world$" agent-and-human-answers]
@@ -181,11 +170,5 @@
     (fn [world n]
       (check (= (parse-long n) (count (:worlds world))) (str "There were " (count (:worlds world)) " worlds"))
       world)]
-   [#"^the possible worlds are the two reference worlds$" reference-worlds]
-   [#"^the reference puzzle solvability at depth (\S+) is (\S+)$"
-    (fn [world depth expected]
-      (let [depth (parse-long depth)]
-        (check depth "Depth must be a number")
-        (check (#{0 1} depth) "The reference puzzle test covers depths 0 and 1")
-        (check (= (yes-no expected) (logic/solvable? (:worlds world) depth)) "Solvability differs")
-        world))]])
+   [#"^the (?:only )?possible Agent seats? (?:are|is) (.+)$"
+    (fn [world expected] (check-agent-seats (:worlds world) expected) world)]])

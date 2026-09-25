@@ -36,20 +36,6 @@
     (should-be-nil (english/parse-prop "Neo is the Agent" {:names names}))
     (should-be-nil (english/parse-prop "I am the Agent" {}))))
 
-(describe "Parsing questions"
-  (it "parses Agent and human questions"
-    (should= [:is :D :agent] (english/parse-question "is D the Agent?" {}))
-    (should= [:is :D :agent] (english/parse-question "is D an Agent?" {}))
-    (should= [:is :A :human] (english/parse-question "Is Vera human?" {:names names})))
-
-  (it "resolves you to the addressed passenger"
-    (should= [:is :A :agent] (english/parse-question "are you the Agent?" {:self :A})))
-
-  (it "rejects anything that is not a single supported question"
-    (should-be-nil (english/parse-question "what is love?" {}))
-    (should-be-nil (english/parse-question "is A the Agent and is B human?" {}))
-    (should-be-nil (english/parse-question "is Neo the Agent?" {:names names}))))
-
 (describe "Rendering"
   (it "renders statements with persona names"
     (should= "Tomasz is the Agent." (english/render-statement [:is :B :agent] true {:names names :self :A}))
@@ -66,17 +52,6 @@
              (english/render-statement [:and [:is :A :agent] [:is :D :human]] true {}))
     (should= "I am the Agent or B is the Agent."
              (english/render-statement [:or [:is :A :agent] [:is :B :agent]] true {:self :A})))
-
-  (it "renders answers"
-    (should= "No. Mr. Grey is not the Agent."
-             (english/render-answer [:is :D :agent] false {:names names :self :B}))
-    (should= "Yes. I am the Agent."
-             (english/render-answer [:is :B :agent] true {:names names :self :B})))
-
-  (it "renders questions that parse back"
-    (should= "is D the Agent?" (english/render-question [:is :D :agent] {}))
-    (doseq [prop [[:is :A :agent] [:is :B :human]]]
-      (should= prop (english/parse-question (english/render-question prop {:names names}) {:names names}))))
 
   (it "renders statements that parse back"
     (doseq [[prop polarity self] [[[:is :B :agent] true :A]

@@ -1,49 +1,19 @@
 (ns last-train.page
-  "DOM glue only: render terminal lines, pass typed and tapped commands on, draw the rain.
+  "DOM glue only: draw the passengers, run the clock, pass keys and taps on.
   Game rules live in last-train.terminal and below."
   (:require [last-train.terminal :as terminal]))
 
 (defonce session (atom nil))
 
+;; :playing (clock running) or :result (showing the last answer, waiting for Next).
+(defonce phase (atom :playing))
+;; Controls of the train just answered, so the result shows its cards.
+(defonce answered (atom nil))
+;; Latest outcome and operator lines to show under the cards.
+(defonce message (atom []))
+(defonce deadline (atom 0))
+
 (defn- el [id] (js/document.getElementById id))
-
-(defn- render! [lines]
-  (let [transcript (el "transcript")]
-    (doseq [{:keys [text kind]} lines]
-      (let [div (js/document.createElement "div")]
-        (set! (.-className div) (str "line " (name kind)))
-        (set! (.-textContent div) text)
-        (.appendChild transcript div)))
-    (set! (.-scrollTop transcript) (.-scrollHeight transcript))))
-
-(defn- place-cursor!
-  "Put the green block where the next character goes (the font is monospace)."
-  [& _]
-  (let [input (el "command")
-        at (or (.-selectionStart input) (count (.-value input)))]
-    (set! (.. (el "cursor") -style -left)
-          (str "calc(" at "ch - " (.-scrollLeft input) "px)"))))
-
-(declare ^:private render-controls!)
-
-(defn- play! [text]
-  (let [before (count (:lines @session))]
-    (swap! session terminal/submit text rand-int)
-    (render! (drop before (:lines @session)))
-    (render-controls!)))
-
-(defn- submit! [event]
-  (.preventDefault event)
-  (let [input (el "command")
-        text (.-value input)]
-    (when-not (= "" (.trim text))
-      (play! text))
-    (set! (.-value input) "")
-    (.focus input)
-    (place-cursor!)))
-
-;; What the player is choosing: nil, {:mode :ask :seat "A"} or {:mode :accuse :seat "A"}.
-(defonce choice (atom nil))
 
 (defn- node [tag class text]
   (let [n (js/document.createElement tag)]
@@ -57,63 +27,99 @@
     (.addEventListener b "click" (fn [_] (on-click)))
     b))
 
-(defn- choose! [c]
-  (reset! choice c)
-  (render-controls!))
+(declare ^:private render!)
 
-(defn- act! [text]
-  (reset! choice nil)
-  (play! text))
+(defn- seconds-left []
+  (max 0 (js/Math.ceil (/ (- @deadline (js/Date.now)) 1000))))
 
-(defn- card [{:keys [seat name bio]} {:keys [questions-left over?]}]
-  (let [c (node "div" "card" nil)
-        actions (node "div" "actions" nil)
-        ask (button "ask" "Ask" #(choose! {:mode :ask :seat seat}))]
-    (.appendChild c (doto (node "div" "who" nil)
-                      (.appendChild (node "b" nil seat))
-                      (.appendChild (js/document.createTextNode (str " " name)))))
-    (.appendChild c (node "div" "bio" bio))
-    (set! (.-disabled ask) (or over? (zero? questions-left)))
-    (.appendChild actions ask)
-    (.appendChild actions (button "accuse" "Accuse" #(choose! {:mode :accuse :seat seat})))
-    (when over? (set! (.-disabled (.-lastChild actions)) true))
-    (.appendChild c actions)
-    (when (= seat (:seat @choice)) (.add (.-classList c) "chosen"))
+(defn- run-command!
+  "Submit text; returns the new transcript lines that are not echoes."
+  [text opts]
+  (let [before (count (:lines @session))]
+    (swap! session terminal/submit text rand-int opts)
+    (->> (:lines @session) (drop before) (remove #(= :player (:kind %))))))
+
+(defn- start-clock! []
+  (reset! deadline (+ (js/Date.now) (* 1000 (:seconds (terminal/controls @session))))))
+
+(defn- answer! [text]
+  (when (= :playing @phase)
+    (let [before (terminal/controls @session)
+          seconds (seconds-left)
+          lines (run-command! text {:seconds-left seconds})]
+      (when (:last (terminal/controls @session))
+        (reset! answered before)
+        (reset! phase :result)
+        (reset! message (filter #(#{:outcome :operator} (:kind %)) lines)))
+      (render!))))
+
+(defn- hint! []
+  (when (= :playing @phase)
+    (reset! message (run-command! "hint" {}))
+    (render!)))
+
+(defn- next! []
+  (when (= :result @phase)
+    (when (:over? (terminal/controls @session))
+      (run-command! "new" {}))
+    (.blur js/document.activeElement)
+    (reset! phase :playing)
+    (reset! answered nil)
+    (reset! message [])
+    (start-clock!)
+    (render!)))
+
+(defn- card [{:keys [seat name bio line]} marks]
+  (let [c (button (str "card " (marks seat)) nil #(answer! seat))]
+    (.appendChild c (node "span" "letter" seat))
+    (.appendChild c (node "span" "who" name))
+    (.appendChild c (node "span" "bio" bio))
+    (.appendChild c (node "span" "quote" (str "\u201c" line "\u201d")))
+    (.setAttribute c "aria-label" (str seat ", " name ": " line))
     c))
 
-(defn- picker [{:keys [passengers over?]}]
-  (let [p (node "div" "pick" nil)
-        {:keys [mode seat]} @choice
-        name-of (fn [s] (:name (first (filter #(= s (:seat %)) passengers))))]
-    (cond
-      over?
-      (.appendChild p (button "go" "Play again" #(act! "new")))
-
-      (= :ask mode)
-      (do (.appendChild p (node "span" "prompt-text" (str "Ask " (name-of seat) ": is ... the Agent?")))
-          (doseq [{target :seat target-name :name} passengers]
-            (.appendChild p (button "go" (if (= target seat) (str target-name " (self)") target-name)
-                                    #(act! (terminal/ask-command seat target)))))
-          (.appendChild p (button "cancel" "Cancel" #(choose! nil))))
-
-      (= :accuse mode)
-      (do (.appendChild p (node "span" "prompt-text" (str "Accuse " (name-of seat) "? This ends the game.")))
-          (.appendChild p (button "go danger" "Pull the brake" #(act! (terminal/accuse-command seat))))
-          (.appendChild p (button "cancel" "Cancel" #(choose! nil))))
-
-      :else
-      (.appendChild p (node "span" "prompt-text" "Tap Ask to question a passenger, or Accuse to name the Agent.")))
-    p))
-
-(defn- render-controls! []
-  (let [controls (terminal/controls @session)
+(defn- render! []
+  (let [now (terminal/controls @session)
+        shown (or @answered now)
+        {:keys [agent guess right?]} (:last now)
+        marks (if @answered
+                (cond-> {agent "agent"} (and guess (not right?)) (assoc guess "wrong"))
+                {})
         board (el "board")
-        pick (el "picker")]
+        result (el "result")]
+    (set! (.-textContent (el "status"))
+          (str "Train " (:train shown) " of " (:trains now) "  \u00b7  Score " (:score now)))
     (set! (.-innerHTML board) "")
-    (doseq [passenger (:passengers controls)]
-      (.appendChild board (card passenger controls)))
-    (set! (.-innerHTML pick) "")
-    (.appendChild pick (picker controls))))
+    (doseq [p (:passengers shown)]
+      (.appendChild board (card p marks)))
+    (.toggle (.-classList board) "answered" (boolean @answered))
+    (set! (.-innerHTML result) "")
+    (doseq [{:keys [text kind]} @message]
+      (.appendChild result (node "p" (str "line " (name kind)) text)))
+    (let [actions (node "div" "actions" nil)]
+      (if (= :result @phase)
+        (.appendChild actions (button "go" (if (:over? now) "Play again (Enter)" "Next train (Enter)") next!))
+        (do (.appendChild result (node "p" "line system" "Who is the Agent? Tap a passenger or press A, B, C or D."))
+            (when (:hint? now) (.appendChild actions (button "cancel" "Tip (H)" hint!)))))
+      (.appendChild result actions))))
+
+(defn- tick! [_]
+  (let [fill (el "timer-fill")
+        total (* 1000 (:seconds (terminal/controls @session)))
+        left (max 0 (- @deadline (js/Date.now)))]
+    (when (= :playing @phase)
+      (set! (.. fill -style -width) (str (* 100 (/ left total)) "%"))
+      (.toggle (.-classList fill) "low" (< left 5000))
+      (when (zero? left) (answer! "time"))))
+  (js/requestAnimationFrame tick!))
+
+(defn- on-key! [event]
+  (let [k (.toLowerCase (.-key event))]
+    (when-not (or (.-ctrlKey event) (.-metaKey event) (.-altKey event))
+      (cond
+        (and (#{"a" "b" "c" "d"} k) (= :playing @phase)) (do (.preventDefault event) (answer! (.toUpperCase k)))
+        (and (= "h" k) (= :playing @phase)) (hint!)
+        (and (#{"enter" " " "n"} k) (= :result @phase)) (do (.preventDefault event) (next!))))))
 
 (def ^:private glyphs "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789")
 
@@ -147,22 +153,6 @@
     (.addEventListener js/window "resize" resize!)
     (js/requestAnimationFrame frame)))
 
-;; Any printable key goes to the prompt, so the player never has to click it first.
-;; Space and Enter on a focused button still press that button.
-(defn- type-anywhere! [event]
-  (let [input (el "command")
-        active js/document.activeElement
-        k (.-key event)]
-    (when (and (= 1 (count k))
-               (not (or (.-ctrlKey event) (.-metaKey event) (.-altKey event)))
-               (not= input active)
-               (not (and (= " " k) (= "BUTTON" (.-tagName active)))))
-      (.preventDefault event)
-      (set! (.-value input) (str (.-value input) k))
-      (.focus input)
-      (.setSelectionRange input (count (.-value input)) (count (.-value input)))
-      (js/requestAnimationFrame place-cursor!))))
-
 ;; Scittle checks arity: every event handler must accept the event argument.
 (defn- show-rules! [open?]
   (set! (.-hidden (el "rules")) (not open?))
@@ -176,17 +166,12 @@
 
 (defn- init! []
   (let [params (js/URLSearchParams. (.-search js/location))]
-    (reset! session (terminal/boot {:puzzle-param (.get params "puzzle") :rand-int rand-int}))
-    (render! (:lines @session))
-    (render-controls!)
-    (.addEventListener (el "prompt") "submit" submit!)
+    (reset! session (terminal/boot {:seed-param (.get params "seed") :rand-int rand-int}))
     (start-rules!)
-    (doseq [event ["input" "keydown" "keyup" "click" "focus" "select" "scroll"]]
-      (.addEventListener (el "command") event (fn [_] (js/requestAnimationFrame place-cursor!))))
-    (.addEventListener js/document "selectionchange" (fn [_] (js/requestAnimationFrame place-cursor!)))
-    (.addEventListener js/document "keydown" type-anywhere!)
-    (place-cursor!)
-    (.focus (el "command"))
+    (.addEventListener js/document "keydown" on-key!)
+    (start-clock!)
+    (render!)
+    (js/requestAnimationFrame tick!)
     (set! (.. js/document -body -dataset -ready) "true")
     (when-not (.-matches (js/matchMedia "(prefers-reduced-motion: reduce)"))
       (start-rain!))))

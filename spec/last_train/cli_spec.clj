@@ -2,45 +2,31 @@
   (:require [speclj.core :refer :all]
             [clojure.string :as str]
             [last-train.cli :as cli]
-            [last-train.puzzles :as puzzles]))
+            [last-train.game :as game]))
 
 (describe "Command line options"
-  (it "loads the reference puzzle with template voices"
-    (should= {:puzzle puzzles/reference :voices "template"}
-             (cli/parse-args ["--seed" "reference" "--voices=template"]))
-    (should= {:puzzle puzzles/reference :voices "template"}
-             (cli/parse-args ["--seed=reference" "--voices" "template"])))
+  (it "takes a numeric seed"
+    (should= {:seed 42} (cli/parse-args ["--seed" "42"]))
+    (should= {:seed 7} (cli/parse-args ["--seed=7"])))
 
-  (it "defaults to the reference puzzle and template voices"
-    (should= {:puzzle puzzles/reference :voices "template"} (cli/parse-args [])))
+  (it "picks a random seed by default or for random"
+    (should= {:seed 3} (cli/parse-args [] (constantly 3)))
+    (should= {:seed 3} (cli/parse-args ["--seed" "random"] (constantly 3))))
 
-  (it "loads any catalog puzzle by name"
-    (doseq [{:keys [name] :as puzzle} puzzles/catalog]
-      (should= {:puzzle puzzle :voices "template"} (cli/parse-args ["--seed" name]))))
-
-  (it "picks a random puzzle for the random seed"
-    (should= {:puzzle (puzzles/pick (constantly 2) nil) :voices "template"}
-             (cli/parse-args ["--seed" "random"] (constantly 2))))
-
-  (it "names every supported seed when the seed is unknown"
-    (should= {:error "Unknown seed: 42. Supported: reference, commuters, night-shift, terminus, red-eye, random"}
-             (cli/parse-args ["--seed" "42"])))
-
-  (it "reports unsupported seeds, voices and options"
-    (should-contain :error (cli/parse-args ["--seed" "42"]))
-    (should-contain :error (cli/parse-args ["--voices=llm"]))
+  (it "reports bad seeds and options"
+    (should= {:error "Unknown seed: reference. Use a number or random."} (cli/parse-args ["--seed" "reference"]))
     (should-contain :error (cli/parse-args ["--seed"]))
     (should-contain :error (cli/parse-args ["--debug"]))))
 
 (describe "Terminal play"
   (it "prompts for each line and prints the game's replies"
-    (let [out (with-out-str (with-in-str "ask C is A the Agent?\naccuse A\n"
-                              (cli/play puzzles/reference)))]
+    (let [out (with-out-str (with-in-str (str/join "\n" (repeat 10 "time"))
+                              (cli/play 42)))]
       (should-contain "LAST TRAIN\n" out)
-      (should-contain "> Ilse (C): \"Yes. Vera is the Agent.\"\n" out)
-      (should-contain "WIN" out)
+      (should-contain (str (first (:output (game/start 42))) "\n") out)
+      (should-contain "> Time's up! " out)
       (should (str/ends-with? out "GAME OVER\n"))))
 
   (it "stops when input runs out"
-    (let [out (with-out-str (with-in-str "" (cli/play puzzles/reference)))]
+    (let [out (with-out-str (with-in-str "" (cli/play 42)))]
       (should (str/ends-with? out "> ")))))
