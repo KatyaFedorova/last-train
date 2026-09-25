@@ -62,7 +62,7 @@
           {:keys [passengers train trains hint? seconds last over?]} (terminal/controls session)]
       (should= ["A" "B" "C" "D"] (map :seat passengers))
       (should= (map (game/lines (:game session)) [:A :B :C :D]) (map :line passengers))
-      (should= [1 10 true 20 nil false] [train trains hint? seconds last over?])))
+      (should= [1 10 true 60 nil false] [train trains hint? seconds last over?])))
 
   (it "reveals the Agent only after the answer"
     (let [session (boot "42")

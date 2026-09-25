@@ -7,7 +7,7 @@ A fast, deterministic logic game set on a late night subway inside the Matrix. E
 ## How to play
 
 - Each train shows four passengers, one line each. The lines leave exactly one possible Agent.
-- Tap the Agent or press their letter: **A**, **B**, **C** or **D**. You have 20 seconds.
+- Tap the Agent or press their letter: **A**, **B**, **C** or **D**. You have 1 minute; the clock starts when you press **Start**.
 - Wrong answer or time up: the game shows why and which line was the lie.
 - A run is 10 trains. The first 3 are easy; later trains add lines like "Vera or Ilse is the Agent."
 - **H** gives one tip per run (it names an honest passenger). **Enter** goes to the next train.

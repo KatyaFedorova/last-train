@@ -8,7 +8,7 @@
             [last-train.puzzles :as puzzles]))
 
 (def trains 10)
-(def seconds-per-train 20)
+(def seconds-per-train 60)
 
 (def prompt "Who is the Agent? Press A, B, C or D.")
 (def ^:private noisy "Operator: \"Signal's noisy. Press A, B, C or D, or type hint.\"")

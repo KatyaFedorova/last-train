@@ -5,8 +5,9 @@
 
 (defonce session (atom nil))
 
-;; :playing (clock running) or :result (showing the last answer, waiting for Next).
-(defonce phase (atom :playing))
+;; :ready (before Start, cards hidden, no clock), :playing (clock running)
+;; or :result (showing the last answer, waiting for Next).
+(defonce phase (atom :ready))
 ;; Controls of the train just answered, so the result shows its cards.
 (defonce answered (atom nil))
 ;; Latest outcome and operator lines to show under the cards.
@@ -58,6 +59,13 @@
     (reset! message (run-command! "hint" {}))
     (render!)))
 
+(defn- start! []
+  (when (= :ready @phase)
+    (.blur js/document.activeElement)
+    (reset! phase :playing)
+    (start-clock!)
+    (render!)))
+
 (defn- next! []
   (when (= :result @phase)
     (when (:over? (terminal/controls @session))
@@ -90,15 +98,21 @@
     (set! (.-textContent (el "status"))
           (str "Train " (:train shown) " of " (:trains now) "  \u00b7  Score " (:score now)))
     (set! (.-innerHTML board) "")
-    (doseq [p (:passengers shown)]
-      (.appendChild board (card p marks)))
+    (when-not (= :ready @phase)
+      (doseq [p (:passengers shown)]
+        (.appendChild board (card p marks))))
     (.toggle (.-classList board) "answered" (boolean @answered))
     (set! (.-innerHTML result) "")
     (doseq [{:keys [text kind]} @message]
       (.appendChild result (node "p" (str "line " (name kind)) text)))
     (let [actions (node "div" "actions" nil)]
-      (if (= :result @phase)
+      (case @phase
+        :ready
+        (do (.appendChild result (node "p" "line operator" "Operator: \"One passenger on each train is the Agent. The Agent lies. Everyone else tells the truth. You get one minute per train.\""))
+            (.appendChild actions (button "go" "Start (Enter)" start!)))
+        :result
         (.appendChild actions (button "go" (if (:over? now) "Play again (Enter)" "Next train (Enter)") next!))
+        :playing
         (do (.appendChild result (node "p" "line system" "Who is the Agent? Tap a passenger or press A, B, C or D."))
             (when (:hint? now) (.appendChild actions (button "cancel" "Tip (H)" hint!)))))
       (.appendChild result actions))))
@@ -119,6 +133,7 @@
       (cond
         (and (#{"a" "b" "c" "d"} k) (= :playing @phase)) (do (.preventDefault event) (answer! (.toUpperCase k)))
         (and (= "h" k) (= :playing @phase)) (hint!)
+        (and (#{"enter" " "} k) (= :ready @phase)) (do (.preventDefault event) (start!))
         (and (#{"enter" " " "n"} k) (= :result @phase)) (do (.preventDefault event) (next!))))))
 
 (def ^:private glyphs "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789")
@@ -169,7 +184,6 @@
     (reset! session (terminal/boot {:seed-param (.get params "seed") :rand-int rand-int}))
     (start-rules!)
     (.addEventListener js/document "keydown" on-key!)
-    (start-clock!)
     (render!)
     (js/requestAnimationFrame tick!)
     (set! (.. js/document -body -dataset -ready) "true")
