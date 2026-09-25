@@ -140,7 +140,7 @@
   (assoc world :trains (run-trains (parse-long seed))))
 
 (defn- check-run-puzzles [world]
-  (check (= game/trains (count (:trains world))) "The run is not ten trains long")
+  (check (= game/trains (count (:trains world))) (str "The run is not " game/trains " trains long"))
   (doseq [puzzle (:trains world)]
     (check (= [(:true-world puzzle)] (logic/consistent (:opening puzzle)))
            (str "A train leaves more than one suspect: " (:opening puzzle))))

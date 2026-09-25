@@ -12,9 +12,9 @@ Feature: Web game terminal
     Given I open the web page for seed 42
     When I name the Agent
     And I type "new" at the prompt
-    Then I see "Train 1 of 10"
+    Then I see "Train 1 of 3"
     And I am still on train 1
 
   Scenario: Web game terminal 03 - a link without a usable seed boards a random run
     Given I open the web page for seed "nope"
-    Then I see "Train 1 of 10"
+    Then I see "Train 1 of 3"

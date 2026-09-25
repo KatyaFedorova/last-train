@@ -45,7 +45,7 @@
 (defn level
   "Difficulty for train number n (1-based): plain lines first, then 'or' lines."
   [n]
-  (if (<= n 3) 1 2))
+  (if (<= n 2) 1 2))
 
 (defn generate
   "[puzzle, next seed] for difficulty level (1 or 2)."

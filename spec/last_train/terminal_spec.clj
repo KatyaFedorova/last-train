@@ -40,8 +40,8 @@
       (should= 150 (get-in (terminal/submit before (agent-letter before) first-draw {:seconds-left 10}) [:game :score]))))
 
   (it "offers a new run when the run is over"
-    (let [session (reduce (fn [s _] (submit s "time")) (boot "42") (range 10))]
-      (should= ["Run over: 0 of 10 right." "Score: 0" "GAME OVER" "Press Enter or type \"new\" to play again."]
+    (let [session (reduce (fn [s _] (submit s "time")) (boot "42") (range 3))]
+      (should= ["Run over: 0 of 3 right." "Score: 0" "GAME OVER" "Press Enter or type \"new\" to play again."]
                (take-last 4 (texts session)))))
 
   (it "shows help without changing the run"
@@ -63,7 +63,7 @@
       (should= ["A" "B" "C" "D"] (map :seat passengers))
       (should= (map (game/lines (:game session)) [:A :B :C :D]) (map :line passengers))
       (should= #{:seat :line} (set (mapcat keys passengers)))
-      (should= [1 10 true 60 nil false] [train trains hint? seconds last over?])))
+      (should= [1 3 true 60 nil false] [train trains hint? seconds last over?])))
 
   (it "reveals the Agent only after the answer"
     (let [session (boot "42")

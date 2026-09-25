@@ -5,4 +5,4 @@ Feature: CLI wrong accusation
     When I name a passenger who is not the Agent
     Then I see "Wrong."
     And I see the Agent's lie
-    And I see "Train 2 of 10"
+    And I see "Train 2 of 3"

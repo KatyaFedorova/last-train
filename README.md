@@ -9,7 +9,7 @@ A fast, deterministic logic game set on a late night subway inside the Matrix. E
 - Each train shows four passengers, one line each. The lines leave exactly one possible Agent.
 - Tap the Agent or press their letter: **A**, **B**, **C** or **D**. You have 1 minute; the clock starts when you press **Start**.
 - Wrong answer or time up: the game shows why and which line was the lie.
-- A run is 10 trains. The first 3 are easy; later trains add lines like "A or C is the Agent."
+- A run is 3 trains. The first 2 are easy; the last adds lines like "A or C is the Agent."
 - **H** gives one tip per run (it names an honest passenger). **Enter** goes to the next train.
 - Score: 100 per right answer, plus 5 per second left on the clock.
 

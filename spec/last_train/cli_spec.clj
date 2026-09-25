@@ -20,7 +20,7 @@
 
 (describe "Terminal play"
   (it "prompts for each line and prints the game's replies"
-    (let [out (with-out-str (with-in-str (str/join "\n" (repeat 10 "time"))
+    (let [out (with-out-str (with-in-str (str/join "\n" (repeat 3 "time"))
                               (cli/play 42)))]
       (should-contain "LAST TRAIN\n" out)
       (should-contain (str (first (:output (game/start 42))) "\n") out)

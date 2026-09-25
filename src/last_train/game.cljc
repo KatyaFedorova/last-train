@@ -7,7 +7,7 @@
             [last-train.logic :as logic]
             [last-train.puzzles :as puzzles]))
 
-(def trains 10)
+(def trains 3)
 (def seconds-per-train 60)
 
 (def prompt "Who is the Agent? Press A, B, C or D.")

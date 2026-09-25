@@ -4,4 +4,4 @@ Feature: CLI win
     Given I start "last-train --seed 42"
     When I name the Agent
     Then I see "Right!"
-    And I see "Train 2 of 10"
+    And I see "Train 2 of 3"

@@ -25,7 +25,7 @@
     (let [out (:output started)]
       (should= "LAST TRAIN" (first out))
       (should-contain "Operator: \"One passenger on each train is the Agent. The Agent lies. Everyone else tells the truth.\"" out)
-      (should-contain "Train 1 of 10" out)
+      (should-contain "Train 1 of 3" out)
       (should= 4 (count (filter #(re-matches #"^[A-D]: \".+\"$" %) out)))
       (should= game/prompt (last out))))
 
@@ -45,7 +45,7 @@
   (it "scores a right answer and deals the next train"
     (let [{s :state out :output} (play state :agent)]
       (should= (str "Right! " (persona state (game/agent-seat state)) " is the Agent. +100") (first out))
-      (should-contain "Train 2 of 10" out)
+      (should-contain "Train 2 of 3" out)
       (should= [2 1 100] ((juxt :train :right :score) s))
       (should= {:guess (game/agent-seat state) :agent (game/agent-seat state) :right? true} (:last s))))
 
@@ -102,10 +102,10 @@
       (should= ["Operator: \"No hints left on this run.\""] (:output (game/handle s "hint"))))))
 
 (describe "Ending a run"
-  (it "ends after ten trains with the tally and score"
-    (let [{s :state out :output} (apply play state (concat (repeat 7 :agent) (repeat 3 :wrong)))]
+  (it "ends after three trains with the tally and score"
+    (let [{s :state out :output} (play state :agent :wrong :agent)]
       (should (:over? s))
-      (should= ["Run over: 7 of 10 right." "Score: 700" "GAME OVER"] (rest out))
+      (should= ["Run over: 2 of 3 right." "Score: 200" "GAME OVER"] (rest out))
       (should= ["The run is over."] (:output (game/handle s "A")))))
 
   (it "scores points per right answer"

@@ -60,5 +60,5 @@
                                        [:C [:is :A :agent] true]
                                        [:D [:is :D :agent] false]]})))
 
-  (it "start with three easy trains"
-    (should= [1 1 1 2 2 2 2 2 2 2] (map puzzles/level (range 1 11)))))
+  (it "start with two easy trains"
+    (should= [1 1 2] (map puzzles/level (range 1 4)))))
