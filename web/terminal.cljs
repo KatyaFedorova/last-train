@@ -77,13 +77,11 @@
     (start-clock!)
     (render!)))
 
-(defn- card [{:keys [seat name bio line]} marks]
+(defn- card [{:keys [seat line]} marks]
   (let [c (button (str "card " (marks seat)) nil #(answer! seat))]
     (.appendChild c (node "span" "letter" seat))
-    (.appendChild c (node "span" "who" name))
-    (.appendChild c (node "span" "bio" bio))
     (.appendChild c (node "span" "quote" (str "\u201c" line "\u201d")))
-    (.setAttribute c "aria-label" (str seat ", " name ": " line))
+    (.setAttribute c "aria-label" (str seat ": " line))
     c))
 
 (defn- render! []

@@ -9,7 +9,7 @@
 
 (defn- agent-letter [state] (name (game/agent-seat state)))
 (defn- wrong-letter [state] (name (first (remove #{(game/agent-seat state)} logic/seats))))
-(defn- persona [state seat] (get-in state [:puzzle :personas seat :name]))
+(defn- persona [_ seat] (name seat))
 
 (defn- play
   "State and last output after inputs; :agent and :wrong stand for this train's letters."
@@ -26,7 +26,7 @@
       (should= "LAST TRAIN" (first out))
       (should-contain "Operator: \"One passenger on each train is the Agent. The Agent lies. Everyone else tells the truth.\"" out)
       (should-contain "Train 1 of 10" out)
-      (should= 4 (count (filter #(re-matches #"^.+ \([A-D]\): \".+\"$" %) out)))
+      (should= 4 (count (filter #(re-matches #"^[A-D]: \".+\"$" %) out)))
       (should= game/prompt (last out))))
 
   (it "starts at train 1 with no score and a hint"
@@ -52,9 +52,9 @@
   (it "adds 5 points per second left on the clock"
     (should= 150 (:score (:state (game/handle state (agent-letter state) {:seconds-left 10})))))
 
-  (it "accepts the letter in any case, the name, or accuse"
+  (it "accepts the letter in any case, or accuse"
     (let [seat (game/agent-seat state)]
-      (doseq [input [(str/lower-case (name seat)) (persona state seat) (str "accuse " (persona state seat) ".")]]
+      (doseq [input [(str/lower-case (name seat)) (name seat) (str "accuse " (name seat) ".")]]
         (should= 1 (:right (:state (game/handle state input)))))))
 
   (it "explains a wrong answer and shows the Agent's lie"
@@ -69,7 +69,8 @@
       (should (str/starts-with? (first out) "Time's up! "))
       (should= {:guess nil :agent (game/agent-seat state) :right? false} (:last s))))
 
-  (it "treats anything else as noise"
+  (it "treats anything else, names included, as noise"
+    (should= state (:state (game/handle state "Vera")))
     (let [{s :state out :output} (play state "what is love?")]
       (should= ["Operator: \"Signal's noisy. Press A, B, C or D, or type hint.\""] out)
       (should= state s))))
@@ -77,14 +78,13 @@
 (describe "Explaining a wrong answer"
   (it "names a passenger who would also be lying"
     (let [st (assoc state :puzzle {:true-world {:A :agent :B :human :C :human :D :human}
-                                   :personas {:A {:name "Vera"} :B {:name "Tomasz"} :C {:name "Ilse"} :D {:name "Grey"}}
                                    :opening [[:A [:is :B :agent] true]
                                              [:B [:is :A :agent] true]
                                              [:C [:is :A :agent] true]
                                              [:D [:is :D :agent] false]]})]
-      (should= "Wrong. If Tomasz were the Agent, Ilse would be lying as well, and only one passenger lies. Vera's line was the lie: \"Tomasz is the Agent.\""
+      (should= "Wrong. If B were the Agent, C would be lying as well, and only one passenger lies. A's line was the lie: \"B is the Agent.\""
                (first (:output (game/handle st "B"))))
-      (should= "Wrong. Grey told the truth, and the Agent never does. Vera's line was the lie: \"Grey is the Agent.\""
+      (should= "Wrong. D told the truth, and the Agent never does. A's line was the lie: \"D is the Agent.\""
                (first (:output (game/handle (assoc-in st [:puzzle :opening] [[:A [:is :D :agent] true]
                                                                            [:B [:is :C :agent] false]
                                                                            [:C [:is :C :agent] false]

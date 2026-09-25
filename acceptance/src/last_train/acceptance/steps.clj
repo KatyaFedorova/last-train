@@ -48,8 +48,7 @@
   (let [answered (:answered world)
         agent (game/agent-seat answered)]
     (transcript/check-see (recent-lines world)
-                          (str (get-in answered [:puzzle :personas agent :name])
-                               "'s line was the lie: \"" ((game/lines answered) agent) "\""))
+                          (str (name agent) "'s line was the lie: \"" ((game/lines answered) agent) "\""))
     world))
 
 (defn- check-train [world n]
@@ -70,7 +69,7 @@
         state (game-state world)
         agent (game/agent-seat state)]
     (check who (str "No tip in " (vec (recent-lines world))))
-    (check (not= who (get-in state [:puzzle :personas agent :name])) "The tip names the Agent")
+    (check (not= who (name agent)) "The tip names the Agent")
     world))
 
 (def handlers

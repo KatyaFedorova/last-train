@@ -9,13 +9,13 @@ A fast, deterministic logic game set on a late night subway inside the Matrix. E
 - Each train shows four passengers, one line each. The lines leave exactly one possible Agent.
 - Tap the Agent or press their letter: **A**, **B**, **C** or **D**. You have 1 minute; the clock starts when you press **Start**.
 - Wrong answer or time up: the game shows why and which line was the lie.
-- A run is 10 trains. The first 3 are easy; later trains add lines like "Vera or Ilse is the Agent."
+- A run is 10 trains. The first 3 are easy; later trains add lines like "A or C is the Agent."
 - **H** gives one tip per run (it names an honest passenger). **Enter** goes to the next train.
 - Score: 100 per right answer, plus 5 per second left on the clock.
 
 Tip: if two passengers contradict each other, one of them is the Agent, so the other two are honest.
 
-In the terminal, type a letter, a name, `accuse <name>`, `hint`, or `time` (give up on this train).
+In the terminal, type a letter, `accuse <letter>`, `hint`, or `time` (give up on this train).
 
 ## Play in the browser locally
 
@@ -56,7 +56,7 @@ bb property          # property tests (kept out of the other runs)
 bb site              # build the static site into build/site/
 ```
 
-Trains are generated, not hand-written: `puzzles/generate` picks four passengers from `puzzles/personas` and draws lines until `puzzles/valid?` holds (the lines leave exactly one possible Agent). A seeded Park-Miller generator makes runs replay identically in Babashka and in the browser.
+Trains are generated, not hand-written: `puzzles/generate` draws a line for each passenger, A to D, until `puzzles/valid?` holds (the lines leave exactly one possible Agent). A seeded Park-Miller generator makes runs replay identically in Babashka and in the browser.
 
 The logic engine is deterministic and does not call an LLM. See [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) for the original design. The shipped rules are summarised at its top.
 

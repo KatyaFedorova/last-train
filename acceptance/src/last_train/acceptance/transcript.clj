@@ -5,7 +5,7 @@
             [last-train.english :as english]
             [last-train.logic :as logic]))
 
-(def ^:private statement-line #"^(.+) \(([A-D])\): \"(.*)\"$")
+(def ^:private statement-line #"^([A-D]): \"(.*)\"$")
 
 (defn statements [lines]
   (keep #(re-matches statement-line %) lines))
@@ -13,10 +13,9 @@
 (defn conveyed-facts
   "The [seat prop true] facts the last four statement lines convey."
   [lines]
-  (let [shown (take-last 4 (statements lines))
-        names (into {} (for [[_ persona seat] shown] [(keyword seat) persona]))]
-    (vec (for [[_ _ seat line] shown]
-           (let [prop (english/parse-prop line {:names names :self (keyword seat)})]
+  (let [shown (take-last 4 (statements lines))]
+    (vec (for [[_ seat line] shown]
+           (let [prop (english/parse-prop line {:self (keyword seat)})]
              (check prop (str "Unreadable line: " line))
              [(keyword seat) prop true])))))
 

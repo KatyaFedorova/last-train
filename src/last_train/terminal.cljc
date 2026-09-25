@@ -14,7 +14,7 @@
 (defn- kind [text]
   (cond
     (str/starts-with? text "Operator:") :operator
-    (re-find #"^[^\"]+ \([A-D]\): \"" text) :passenger
+    (re-find #"^[A-D]: \"" text) :passenger
     (re-find #"^(?:Right!|Wrong\.|Time's up!|Run over:|Score: |GAME OVER$)" text) :outcome
     (re-find #"^Train \d+ of \d+$" text) :train
     :else :system))
@@ -58,8 +58,7 @@
   [{:keys [game]}]
   (let [lines (game/lines game)]
     {:passengers (vec (for [seat logic/seats]
-                        (merge {:seat (name seat) :line (lines seat)}
-                               (get-in game [:puzzle :personas seat]))))
+                        {:seat (name seat) :line (lines seat)}))
      :train (:train game)
      :trains game/trains
      :score (:score game)

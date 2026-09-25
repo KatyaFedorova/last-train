@@ -1,31 +1,9 @@
 (ns last-train.puzzles
-  "Seeded puzzle generator. A puzzle is four passengers and one line each;
+  "Seeded puzzle generator. A puzzle is four passengers, A to D, and one line each;
   the lines alone must leave exactly one possible Agent. Seeds thread through
   a Park-Miller generator so a run replays identically in Clojure and
   ClojureScript."
   (:require [last-train.logic :as logic]))
-
-(def personas
-  [{:name "Vera" :bio "night-shift nurse"}
-   {:name "Tomasz" :bio "bike courier"}
-   {:name "Ilse" :bio "student with headphones"}
-   {:name "Mr. Grey" :bio "grey suit, newspaper"}
-   {:name "Priya" :bio "accountant hugging a briefcase"}
-   {:name "Dmitri" :bio "sharp suit, earpiece"}
-   {:name "Rosa" :bio "busker with a battered guitar"}
-   {:name "Old Sam" :bio "retired conductor"}
-   {:name "Nadia" :bio "ER doctor"}
-   {:name "Kofi" :bio "security guard with a paperback"}
-   {:name "Harlan" :bio "sunglasses at 3 AM"}
-   {:name "Mei" :bio "baker on the early shift"}
-   {:name "Jonas" :bio "janitor with a ring of keys"}
-   {:name "Lena" :bio "hacker with a cracked laptop"}
-   {:name "Big Ray" :bio "bouncer off duty"}
-   {:name "Mr. White" :bio "pressed shirt, perfectly still"}
-   {:name "Anika" :bio "flight attendant in uniform"}
-   {:name "Victor" :bio "salesman with a frozen smile"}
-   {:name "Paolo" :bio "chef smelling of garlic"}
-   {:name "June" :bio "teenager drawing white rabbits"}])
 
 (def ^:private modulus 2147483647)
 
@@ -40,15 +18,6 @@
   "[a number 0..n-1, the next seed]."
   [s n]
   [(quot (* s n) modulus) (next-seed s)])
-
-(defn- pick-distinct
-  "[k distinct items of coll, the next seed]."
-  [s k coll]
-  (loop [s s left (vec coll) picked []]
-    (if (= k (count picked))
-      [picked s]
-      (let [[i s] (draw s (count left))]
-        (recur s (into (subvec left 0 i) (subvec left (inc i))) (conj picked (left i)))))))
 
 (defn- agent [seat] [:is seat :agent])
 
@@ -84,7 +53,6 @@
   (loop [s s]
     (let [[agent-index s] (draw s 4)
           true-world (world (logic/seats agent-index))
-          [cast s] (pick-distinct s 4 personas)
           [opening s] (reduce (fn [[opening s] speaker]
                                 (let [sayable (filter (fn [[prop polarity]]
                                                         (= polarity (logic/can-say? true-world speaker prop)))
@@ -94,9 +62,7 @@
                                   [(conj opening [speaker prop polarity]) s]))
                               [[] s]
                               logic/seats)
-          puzzle {:true-world true-world
-                  :personas (zipmap logic/seats cast)
-                  :opening opening}]
+          puzzle {:true-world true-world :opening opening}]
       (if (and (valid? puzzle) (= (= 2 level) (boolean (uses-or? puzzle))))
         [puzzle s]
         (recur s)))))

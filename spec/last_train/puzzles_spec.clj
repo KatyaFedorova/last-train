@@ -1,20 +1,11 @@
 (ns last-train.puzzles-spec
   (:require [speclj.core :refer :all]
-            [clojure.string :as str]
             [last-train.logic :as logic]
             [last-train.puzzles :as puzzles]))
-
-(def reserved-words #{"a" "b" "c" "d" "i" "me" "you"})
 
 (defn- puzzles-from [n level]
   (map first (take n (iterate (fn [[_ s]] (puzzles/generate s level))
                               (puzzles/generate (puzzles/seed n) level)))))
-
-(describe "Personas"
-  (it "have distinct names that are not seat letters or pronouns"
-    (let [names (map (comp str/lower-case :name) puzzles/personas)]
-      (should= (count names) (count (set names)))
-      (should-not (some reserved-words names)))))
 
 (describe "Seeds"
   (it "turn any integer into a generator seed"
@@ -33,10 +24,10 @@
       (should (puzzles/valid? puzzle))
       (should= [(:true-world puzzle)] (logic/consistent (:opening puzzle)))))
 
-  (it "give four different passengers one line each"
+  (it "give passengers A to D one line each, and no names"
     (doseq [puzzle (puzzles-from 30 1)]
       (should= logic/seats (map first (:opening puzzle)))
-      (should= 4 (count (set (map :name (vals (:personas puzzle))))))))
+      (should= #{:true-world :opening} (set (keys puzzle)))))
 
   (it "use only 'is the Agent' lines on level 1 and at least one 'or' line on level 2"
     (doseq [puzzle (puzzles-from 30 1)]

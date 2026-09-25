@@ -57,11 +57,12 @@
         (should= "LAST TRAIN" (:text (second (new-lines (submit (boot "42") "time") session))))))))
 
 (describe "Controls"
-  (it "shows each passenger with their line"
+  (it "shows each passenger's letter and line, and nothing else"
     (let [session (boot "42")
           {:keys [passengers train trains hint? seconds last over?]} (terminal/controls session)]
       (should= ["A" "B" "C" "D"] (map :seat passengers))
       (should= (map (game/lines (:game session)) [:A :B :C :D]) (map :line passengers))
+      (should= #{:seat :line} (set (mapcat keys passengers)))
       (should= [1 10 true 60 nil false] [train trains hint? seconds last over?])))
 
   (it "reveals the Agent only after the answer"

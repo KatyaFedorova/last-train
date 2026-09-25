@@ -13,16 +13,13 @@
 (def prompt "Who is the Agent? Press A, B, C or D.")
 (def ^:private noisy "Operator: \"Signal's noisy. Press A, B, C or D, or type hint.\"")
 
-(defn- names [puzzle] (update-vals (:personas puzzle) :name))
-
-(defn- persona-name [state seat]
-  (get-in state [:puzzle :personas seat :name]))
+(defn- seat-name [seat] (name seat))
 
 (defn- line-of
   "What seat said on this train, as the player reads it."
   [puzzle seat]
   (let [[_ prop polarity] (first (filter #(= seat (first %)) (:opening puzzle)))]
-    (english/render-statement prop polarity {:names (names puzzle) :self seat})))
+    (english/render-statement prop polarity {:self seat})))
 
 (defn lines
   "Seat -> the line that passenger says on the current train."
@@ -35,7 +32,7 @@
 (defn- train-lines [state]
   (concat [(str "Train " (:train state) " of " trains)]
           (for [seat logic/seats]
-            (str (persona-name state seat) " (" (name seat) "): \"" ((lines state) seat) "\""))
+            (str (name seat) ": \"" ((lines state) seat) "\""))
           [prompt]))
 
 (defn- deal [state]
@@ -72,13 +69,13 @@
                 speaker)
         liar (first (sort-by #(= % (agent-seat state)) liars))]
     (if liar
-      (str "If " (persona-name state guess) " were the Agent, " (persona-name state liar)
+      (str "If " (seat-name guess) " were the Agent, " (seat-name liar)
            " would be lying as well, and only one passenger lies.")
-      (str (persona-name state guess) " told the truth, and the Agent never does."))))
+      (str (seat-name guess) " told the truth, and the Agent never does."))))
 
 (defn- the-lie [state]
   (let [agent (agent-seat state)]
-    (str (persona-name state agent) "'s line was the lie: \"" ((lines state) agent) "\"")))
+    (str (seat-name agent) "'s line was the lie: \"" ((lines state) agent) "\"")))
 
 (defn- finish-train
   "Record the answer (guess is nil on a timeout), then deal the next train or end the run."
@@ -87,7 +84,7 @@
         right? (= agent guess)
         gained (if right? (points seconds-left) 0)
         verdict (cond
-                  right? (str "Right! " (persona-name state agent) " is the Agent. +" gained)
+                  right? (str "Right! " (seat-name agent) " is the Agent. +" gained)
                   guess (str "Wrong. " (why-not state guess) " " (the-lie state))
                   :else (str "Time's up! " (the-lie state)))
         state (-> state
@@ -112,15 +109,15 @@
                               honest)
           seat (first (concat about-agent honest))]
       {:state (assoc state :hint? false)
-       :output [(str "Operator: \"Tip: " (persona-name state seat) " is telling the truth.\"")]})
+       :output [(str "Operator: \"Tip: " (seat-name seat) " is telling the truth.\"")]})
     {:state state :output ["Operator: \"No hints left on this run.\""]}))
 
 (defn- guessed-seat
-  "Seat named by input: a seat letter, a name, or accuse/arrest/blame plus either."
+  "Seat named by input: a seat letter, alone or after accuse/arrest/blame."
   [state input]
   (let [who (-> input str/trim (str/replace #"[.!?]+$" "")
                 (str/replace #"(?i)^(?:accuse|arrest|blame)\s+" ""))]
-    (english/resolve-seat who {:names (names (:puzzle state))})))
+    (english/resolve-seat who {})))
 
 (defn handle
   "Advance the run by one line of player input. opts may carry :seconds-left."
