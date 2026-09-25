@@ -28,8 +28,8 @@ html, body {
 .terminal {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   height: 100dvh;
   max-width: 60rem;
   margin: 0 auto;
@@ -39,7 +39,7 @@ html, body {
 .bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  min-height: 3.25rem;
   border-bottom: 1px solid var(--dim);
   padding-bottom: 8px;
   margin-bottom: 8px;
@@ -47,27 +47,32 @@ html, body {
 
 .bar h1 {
   margin: 0;
+  padding-right: 4rem;
   font-size: 1rem;
   letter-spacing: .3em;
   text-shadow: var(--glow);
 }
 
 #rules-toggle {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--fg);
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 2px solid var(--fg);
   border-radius: 50%;
-  background: transparent;
-  color: var(--fg);
-  font: inherit;
-  font-weight: 700;
+  background: var(--fg);
+  color: var(--bg);
+  font: 700 1.75rem/1 "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   cursor: pointer;
-  text-shadow: var(--glow);
+  touch-action: manipulation;
+  box-shadow: 0 0 12px rgba(51, 255, 102, .7);
 }
 
-#rules-toggle[aria-expanded="true"],
-#rules-toggle:hover { background: var(--fg); color: var(--bg); text-shadow: none; }
-#rules-toggle:focus-visible { outline: 1px dashed var(--fg); outline-offset: 3px; }
+#rules-toggle:hover,
+#rules-toggle[aria-expanded="true"] { background: var(--bg); color: var(--fg); }
+#rules-toggle:focus-visible { outline: 2px dashed var(--fg); outline-offset: 4px; }
 
 #rules {
   border: 1px solid var(--dim);
@@ -84,6 +89,8 @@ html, body {
 #rules pre { margin: .4em 0; color: var(--dim); white-space: pre-wrap; }
 
 #transcript {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -98,6 +105,7 @@ html, body {
 .line.system { color: var(--dim); }
 
 #prompt {
+  flex: none;
   display: flex;
   align-items: center;
   gap: .5ch;

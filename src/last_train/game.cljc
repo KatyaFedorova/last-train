@@ -39,7 +39,7 @@
                :over? false}]
     {:state state
      :output (concat ["LAST TRAIN"
-                      "Operator: \"There's an Agent in your car. It's wearing someone. Find it first.\""
+                      "Operator: \"There's an Agent on this train. It's wearing someone. Find it first.\""
                       "Round 1 - Boarding"]
                      (boarding-lines state)
                      (round-banner state))}))

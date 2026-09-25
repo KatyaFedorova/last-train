@@ -34,7 +34,7 @@
         ctx (.getContext canvas "2d")
         size 16
         drops (atom [])
-        resize! (fn []
+        resize! (fn [& _]
                   (set! (.-width canvas) js/innerWidth)
                   (set! (.-height canvas) js/innerHeight)
                   (reset! drops (vec (repeatedly (js/Math.ceil (/ js/innerWidth size))
@@ -59,13 +59,14 @@
     (.addEventListener js/window "resize" resize!)
     (js/requestAnimationFrame frame)))
 
+;; Scittle checks arity: every event handler must accept the event argument.
 (defn- show-rules! [open?]
   (set! (.-hidden (el "rules")) (not open?))
   (.setAttribute (el "rules-toggle") "aria-expanded" (str open?)))
 
 (defn- start-rules! []
   (.addEventListener (el "rules-toggle") "click"
-                     #(show-rules! (.-hidden (el "rules"))))
+                     (fn [_] (show-rules! (.-hidden (el "rules")))))
   (.addEventListener js/document "keydown"
                      #(when (= "Escape" (.-key %)) (show-rules! false))))
 
