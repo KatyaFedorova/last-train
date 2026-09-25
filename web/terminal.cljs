@@ -16,6 +16,14 @@
         (.appendChild transcript div)))
     (set! (.-scrollTop transcript) (.-scrollHeight transcript))))
 
+(defn- place-cursor!
+  "Put the green block where the next character goes (the font is monospace)."
+  [& _]
+  (let [input (el "command")
+        at (or (.-selectionStart input) (count (.-value input)))]
+    (set! (.. (el "cursor") -style -left)
+          (str "calc(" at "ch - " (.-scrollLeft input) "px)"))))
+
 (defn- submit! [event]
   (.preventDefault event)
   (let [input (el "command")
@@ -25,7 +33,8 @@
       (swap! session terminal/submit text rand-int)
       (render! (drop before (:lines @session))))
     (set! (.-value input) "")
-    (.focus input)))
+    (.focus input)
+    (place-cursor!)))
 
 (def ^:private glyphs "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789")
 
@@ -76,6 +85,10 @@
     (render! (:lines @session))
     (.addEventListener (el "prompt") "submit" submit!)
     (start-rules!)
+    (doseq [event ["input" "keydown" "keyup" "click" "focus" "select" "scroll"]]
+      (.addEventListener (el "command") event (fn [_] (js/requestAnimationFrame place-cursor!))))
+    (.addEventListener js/document "selectionchange" (fn [_] (js/requestAnimationFrame place-cursor!)))
+    (place-cursor!)
     (.focus (el "command"))
     (set! (.. js/document -body -dataset -ready) "true")
     (when-not (.-matches (js/matchMedia "(prefers-reduced-motion: reduce)"))

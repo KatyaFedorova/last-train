@@ -32,9 +32,12 @@ help                new</pre>
     <div id="transcript" role="log" aria-live="polite" aria-label="Transcript"></div>
     <form id="prompt" autocomplete="off">
       <span class="caret" aria-hidden="true">&gt;</span>
-      <input id="command" type="text" aria-label="Command"
-             autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
-             enterkeyhint="send" placeholder="ask B Is D an Agent?">
+      <span class="field">
+        <input id="command" type="text" aria-label="Command"
+               autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
+               enterkeyhint="send" placeholder="ask B Is D an Agent?">
+        <span id="cursor" aria-hidden="true"></span>
+      </span>
     </form>
     <noscript><p class="line system">LAST TRAIN needs JavaScript enabled.</p></noscript>
   </main>

@@ -115,13 +115,19 @@ html, body {
 
 .caret { text-shadow: var(--glow); }
 
-#command {
+.field {
+  position: relative;
   flex: 1;
   min-width: 0;
+  display: flex;
+}
+
+#command {
+  width: 100%;
   background: transparent;
   border: 0;
   color: var(--fg);
-  caret-color: var(--fg);
+  caret-color: transparent;
   font: inherit;
   text-shadow: var(--glow);
   padding: 4px 0;
@@ -132,11 +138,17 @@ html, body {
 #prompt:focus-within { border-top-color: var(--fg); }
 #command:focus-visible { outline: 1px dashed var(--fg); outline-offset: 4px; }
 
-#prompt::after {
-  content: "";
+#cursor {
+  position: absolute;
+  top: 50%;
+  left: 0;
   width: 1ch;
-  height: 1.1em;
+  height: 1.2em;
+  transform: translateY(-50%);
   background: var(--fg);
+  box-shadow: var(--glow);
+  mix-blend-mode: difference;
+  pointer-events: none;
   animation: blink 1s steps(1) infinite;
 }
 
