@@ -16,26 +16,28 @@
       <button id="rules-toggle" type="button" aria-controls="rules" aria-expanded="false" title="Rules">?</button>
     </header>
     <section id="rules" hidden aria-label="Rules">
-      <p>Four passengers. <b>One Agent</b>, <b>one Awake</b> ally, <b>two Sleepers</b>. Find the Agent.</p>
+      <p>Four passengers. <b>One of them is the Agent.</b> Find it.</p>
       <ul>
-        <li><b>Awake</b> always tells the truth.</li>
-        <li><b>Agent</b> always lies.</li>
-        <li><b>Sleeper</b> is honest but blind: answers as if everyone were a Sleeper. A Sleeper always says nobody is an Agent or Awake, and that any two people are the same kind.</li>
+        <li>The <b>Agent always lies</b>.</li>
+        <li>Everyone else is human and <b>always tells the truth</b>.</li>
       </ul>
-      <p>You have <b>3 yes/no questions</b>, then accuse.</p>
-      <pre>ask B Is D an Agent?
-ask C Are A and B the same kind?
-accuse A            accuse A ally D
+      <p>Read what each passenger says. You can ask <b>3 questions</b>, then accuse.</p>
+      <p>Tip: if two passengers point at each other, one of them is lying. Ask someone you trust.</p>
+      <p>Tap <b>Ask</b> or <b>Accuse</b> on a passenger, or type:</p>
+      <pre>ask B Is D the Agent?
+accuse A
 help                new</pre>
-      <p>Name passengers by seat (A&ndash;D) or by name. Score: 100 for the Agent + 50 for the ally + 25 per unused question.</p>
+      <p>Score: 100 for the Agent + 25 per unused question.</p>
     </section>
     <div id="transcript" role="log" aria-live="polite" aria-label="Transcript"></div>
+    <section id="board" aria-label="Passengers"></section>
+    <div id="picker" aria-live="polite"></div>
     <form id="prompt" autocomplete="off">
       <span class="caret" aria-hidden="true">&gt;</span>
       <span class="field">
         <input id="command" type="text" aria-label="Command"
                autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off"
-               enterkeyhint="send" placeholder="ask B Is D an Agent?">
+               enterkeyhint="send" placeholder="or type: ask B Is D the Agent?">
         <span id="cursor" aria-hidden="true"></span>
       </span>
     </form>

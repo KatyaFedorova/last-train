@@ -5,4 +5,3 @@ Feature: Web game invalid question
     When I enter "what is love?" as a question for passenger B
     Then I see "Signal's noisy. Rephrase."
     And I see that 3 questions remain
-    And I remain in Station 1

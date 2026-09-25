@@ -21,8 +21,8 @@
     (should-be-nil (puzzles/by-name "nope"))
     (should-be-nil (puzzles/by-name nil)))
 
-  (it "keeps the reference puzzle unchanged"
-    (should= {:A :agent :B :sleeper :C :sleeper :D :awake} (:true-world puzzles/reference))
+  (it "keeps the reference puzzle's Agent and personas"
+    (should= {:A :agent :B :human :C :human :D :human} (:true-world puzzles/reference))
     (should= "Mr. Grey" (get-in puzzles/reference [:personas :D :name])))
 
   (it "only ships puzzles that follow the puzzle rules"
@@ -35,10 +35,8 @@
         (should= 4 (count (set names)))
         (should-not (some reserved-words names)))))
 
-  (it "varies the true world and puts the Agent in at least three different seats"
-    (let [worlds (map :true-world puzzles/catalog)]
-      (should= (count worlds) (count (set worlds)))
-      (should (<= 3 (count (set (map logic/agent-seat worlds))))))))
+  (it "puts the Agent in every seat somewhere in the catalog"
+    (should= logic/seats (logic/agent-seats (map :true-world puzzles/catalog)))))
 
 (describe "Puzzle rules"
   (it "accepts the reference puzzle"
@@ -46,30 +44,19 @@
 
   (it "rejects a puzzle whose true world contradicts its opening"
     (should-not (puzzles/valid? (assoc puzzles/reference :true-world
-                                       {:A :awake :B :sleeper :C :sleeper :D :agent}))))
+                                       {:A :human :B :human :C :human :D :agent}))))
 
   (it "rejects a puzzle already solved at boarding"
-    (let [opening [[:A [:is :A :agent] false]
-                   [:B [:is :A :agent] false]
-                   [:C [:is :B :agent] false]
-                   [:D [:is :B :agent] false]]]
-      (should= 1 (count (logic/agent-seats (logic/consistent opening))))
+    (let [opening [[:A [:is :B :agent] true]
+                   [:B [:is :A :agent] true]
+                   [:C [:is :A :agent] true]
+                   [:D [:is :D :agent] false]]]
+      (should= [:A] (logic/agent-seats (logic/consistent opening)))
       (should-not (puzzles/valid? (with-opening puzzles/reference opening)))))
 
-  (it "rejects a puzzle one question can solve"
-    (let [opening [[:A [:is :A :agent] false]
-                   [:B [:is :A :agent] false]
-                   [:C [:is :A :agent] false]
-                   [:D [:is :A :agent] true]]]
-      (should (logic/solvable? (logic/consistent opening) 1))
-      (should-not (puzzles/valid? (with-opening puzzles/reference opening)))))
-
-  (it "rejects a puzzle that leaves more than four worlds"
-    (let [opening [[:A [:count-eq :agent 0] true]
-                   [:B [:is :C :awake] false]
-                   [:C [:is :D :awake] false]
-                   [:D [:is :A :awake] false]]]
-      (should= 5 (count (logic/consistent opening)))
+  (it "rejects a puzzle that leaves every passenger a suspect"
+    (let [opening (vec (for [seat logic/seats] [seat [:is seat :agent] false]))]
+      (should= 4 (count (logic/consistent opening)))
       (should-not (puzzles/valid? (with-opening puzzles/reference opening))))))
 
 (describe "Picking a puzzle"

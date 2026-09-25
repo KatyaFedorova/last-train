@@ -8,10 +8,10 @@
 
 (def reference-statements
   "The reference opening statements, as written in the reference-puzzle feature."
-  [["A" "exactly 0 passengers are Agents" true]
-   ["B" "A is not an Agent" true]
-   ["C" "B and C are the same kind" true]
-   ["D" "B and C are the same kind" true]])
+  [["A" "B is the Agent" true]
+   ["B" "A is the Agent" true]
+   ["C" "C is the Agent" false]
+   ["D" "C is the Agent" false]])
 
 (defn seat [text]
   (let [seat (keyword (str/trim text))]
@@ -53,9 +53,9 @@
   (let [passengers (zipmap logic/seats (map role [a b c d]))]
     (assoc world :world passengers)))
 
-(defn- check-composition [world agents awake sleepers]
+(defn- check-composition [world agents humans]
   (check (some #{(:world world)} logic/all-worlds) (str "Not a possible world: " (:world world)))
-  (check (= {:agent (parse-long agents) :awake (parse-long awake) :sleeper (parse-long sleepers)}
+  (check (= {:agent (parse-long agents) :human (parse-long humans)}
             (frequencies (vals (:world world))))
          (str "Wrong composition: " (:world world)))
   world)
@@ -96,25 +96,21 @@
   (let [[op x y] prop]
     (case op
       :is (= y (get world x))
-      :same (= (get world x) (get world y))
-      :count-eq (= y (count (filter #(= x %) (vals world))))
       :not (not (reference-evaluation x world))
       :and (every? #(reference-evaluation % world) [x y])
       :or (boolean (some #(reference-evaluation % world) [x y])))))
 
 (def ^:private atomic-props
-  (concat (for [seat logic/seats role logic/roles] [:is seat role])
-          (for [[x y] logic/seat-pairs] [:same x y])
-          (for [role logic/roles n (range 5)] [:count-eq role n])))
+  (for [seat logic/seats role logic/roles] [:is seat role]))
 
 (def ^:private sample-props
   (concat atomic-props
           (map #(vector :not %) atomic-props)
-          (for [x (take 6 atomic-props) y (take-last 6 atomic-props)] [:and x y])
-          (for [x (take 6 atomic-props) y (drop 12 (take 18 atomic-props))] [:or x y])))
+          (for [x atomic-props y atomic-props] [:and x y])
+          (for [x atomic-props y atomic-props] [:or x y])))
 
 (defn- evaluate-props [world]
-  (check (= #{:is :same :count-eq :not :and :or} (set (map first sample-props))) "Missing operators")
+  (check (= #{:is :not :and :or} (set (map first sample-props))) "Missing operators")
   (assoc world :evaluations (for [w (:worlds world) p sample-props]
                               [p w (logic/evaluate p w)])))
 
@@ -126,27 +122,16 @@
 
 (def ^:private question-props (distinct (map second logic/questions)))
 
-(defn- agent-and-awake-answers [world]
+(defn- agent-and-human-answers [world]
   (assoc world :answer-pairs
-         (for [w (:worlds world) p (concat question-props sample-props)]
-           (let [by-role (fn [r] (logic/can-say? w (first (filter #(= r (w %)) logic/seats)) p))]
-             [(by-role :agent) (by-role :awake)]))))
+         (for [w (:worlds world) p (concat question-props sample-props)
+               human (remove #{(logic/agent-seat w)} logic/seats)]
+           [(logic/can-say? w (logic/agent-seat w) p) (logic/can-say? w human p)])))
 
 (defn- check-opposite-answers [world]
   (check (seq (:answer-pairs world)) "No answers were collected")
   (check (every? (fn [[agent awake]] (not= agent awake)) (:answer-pairs world))
-         "Agent and Awake answered alike")
-  world)
-
-(defn- ask-each-sleeper [world text]
-  (let [p (canonical-prop text)]
-    (assoc world :sleeper-answers
-           (for [w (:worlds world) s logic/seats :when (= :sleeper (w s))]
-             (logic/can-say? w s p)))))
-
-(defn- check-every-answer [world expected]
-  (check (= 24 (count (:sleeper-answers world))) "Expected two Sleepers in each of 12 worlds")
-  (check (every? #(= (yes-no expected) %) (:sleeper-answers world)) "Sleeper answers differ")
+         "The Agent and a human answered alike")
   world)
 
 (defn- reference-opening [world]
@@ -155,7 +140,7 @@
 
 (defn- reference-worlds [world]
   (let [world (reference-opening world)]
-    (check (= 3 (count (:worlds world))) "Reference opening did not leave three worlds")
+    (check (= 2 (count (:worlds world))) "Reference opening did not leave two worlds")
     world))
 
 (defn- named-puzzle [world name]
@@ -181,16 +166,14 @@
    [#"^a new game picks a puzzle$" pick-next]
    [#"^it is not \"(.+)\"$" check-not-picked]
    [#"^the (?:true )?passenger world is A=([^,\s]+), B=([^,\s]+), C=([^,\s]+), D=([^,\s]+)$" set-passenger-world]
-   [#"^the world has exactly (\d+) Agent, (\d+) Awake passenger, and (\d+) Sleepers$" check-composition]
+   [#"^the world has exactly (\d+) Agent and (\d+) humans$" check-composition]
    [#"^the (\d+) possible passenger worlds$" all-worlds]
    [#"^the answer is (\S+)$" check-answer]
    [#"^(\S+) answers (\S+) about (\S+)$" check-answer-about]
-   [#"^I evaluate Is, Same, CountEq, Not, And, and Or propositions in each world$" evaluate-props]
+   [#"^I evaluate Is, Not, And, and Or propositions in each world$" evaluate-props]
    [#"^each proposition has its ordinary boolean value in that world$" check-evaluations]
-   [#"^the Agent and Awake passenger answer the same supported proposition in each world$" agent-and-awake-answers]
+   [#"^the Agent and a human passenger answer the same supported proposition in each world$" agent-and-human-answers]
    [#"^their answers are opposite in every world$" check-opposite-answers]
-   [#"^each Sleeper is asked whether (.+)$" ask-each-sleeper]
-   [#"^every answer is (\S+)$" check-every-answer]
    ;; The step data table is not carried by the APS IR; it holds the reference statements.
    [#"^the opening statements are(?: the reference statements)?$" reference-opening]
    [#"^I inspect the possible worlds$" (fn [world] (assoc world :worlds (logic/consistent (:facts world))))]
@@ -198,11 +181,11 @@
     (fn [world n]
       (check (= (parse-long n) (count (:worlds world))) (str "There were " (count (:worlds world)) " worlds"))
       world)]
-   [#"^the possible worlds are the three reference worlds$" reference-worlds]
+   [#"^the possible worlds are the two reference worlds$" reference-worlds]
    [#"^the reference puzzle solvability at depth (\S+) is (\S+)$"
     (fn [world depth expected]
       (let [depth (parse-long depth)]
         (check depth "Depth must be a number")
-        (check (#{1 2} depth) "The reference puzzle test covers depths 1 and 2")
+        (check (#{0 1} depth) "The reference puzzle test covers depths 0 and 1")
         (check (= (yes-no expected) (logic/solvable? (:worlds world) depth)) "Solvability differs")
         world))]])

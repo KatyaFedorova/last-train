@@ -10,8 +10,8 @@ script='
   (let [draw (fn [_] 0)
         s (reduce #(t/submit %1 %2 draw)
                   (t/boot {:puzzle-param name :rand-int draw})
-                  ["hello" "help" "ASK B Is D an Agent?" "ask A, are B and C the same kind?"
-                   "accuse A ally D" "new"])]
+                  ["hello" "help" "ASK B Is D the Agent?" "ask A, is C human?"
+                   "accuse A" "new"])]
     (doseq [{:keys [text kind]} (:lines s)] (println kind text))))'
 
 cljs=$(npx --yes nbb@1 -cp src -e "$script")

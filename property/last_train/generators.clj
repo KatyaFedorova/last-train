@@ -8,9 +8,7 @@
 (def world (gen/elements logic/all-worlds))
 
 (def atom-prop
-  (gen/one-of [(gen/tuple (gen/return :is) seat role)
-               (gen/fmap (fn [[x y]] [:same x y]) (gen/elements logic/seat-pairs))
-               (gen/tuple (gen/return :count-eq) role (gen/choose 0 4))]))
+  (gen/tuple (gen/return :is) seat role))
 
 (def literal
   (gen/one-of [atom-prop (gen/fmap #(vector :not %) atom-prop)]))
@@ -30,8 +28,7 @@
 (def player-line
   "Player input: well-formed commands mixed with arbitrary text."
   (let [who (gen/elements ["A" "b" "Vera" "tomasz" "Ilse" "MR. GREY" "Neo" "you"])
-        kind (gen/elements ["an Agent" "Awake" "a Sleeper" "a dentist"])]
+        kind (gen/elements ["the Agent" "an Agent" "human" "a dentist"])]
     (gen/one-of [(gen/fmap (fn [[t x k]] (str "ask " t " is " x " " k "?")) (gen/tuple who who kind))
-                 (gen/fmap (fn [[t x y]] (str "ask " t ", are " x " and " y " the same kind?")) (gen/tuple who who who))
-                 (gen/fmap (fn [[a b]] (str "accuse " a (when b (str " ally " b)))) (gen/tuple who (gen/one-of [(gen/return nil) who])))
+                 (gen/fmap #(str "accuse " %) who)
                  gen/string-ascii])))

@@ -43,5 +43,5 @@
                                     lines (gen/vector g/player-line 0 8)]
                        (let [session (web-session puzzle lines)]
                          (or (get-in session [:game :over?])
-                             (not-any? #(re-find #":agent|:awake|:sleeper|true-world" (:text %))
+                             (not-any? #(re-find #":agent|:human|true-world" (:text %))
                                        (:lines session)))))))))

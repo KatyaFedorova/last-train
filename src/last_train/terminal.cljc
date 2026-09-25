@@ -13,7 +13,7 @@
   (cond
     (str/starts-with? text "Operator:") :operator
     (re-find #"^[^\"]+ \([A-D]\): \"" text) :passenger
-    (re-find #"WIN|LOSE|PERFECT RUN|^Score: |^GAME OVER$" text) :outcome
+    (re-find #"WIN$|LOSE$|^Score: |^GAME OVER$" text) :outcome
     :else :system))
 
 (defn- line [text] {:text text :kind (kind text)})
@@ -54,3 +54,19 @@
       (= "help" command) (add-lines session [game/syntax])
 
       :else (play session input))))
+
+(defn controls
+  "What the page's buttons offer: each passenger, questions left, game over."
+  [{:keys [game]}]
+  {:passengers (vec (for [seat [:A :B :C :D]]
+                      (merge {:seat (name seat)} (get-in game [:puzzle :personas seat]))))
+   :questions-left (:questions-left game)
+   :over? (:over? game)})
+
+(defn ask-command
+  "The command a button sends to ask seat whether about is the Agent."
+  [seat about]
+  (str "ask " seat " Is " about " the Agent?"))
+
+(defn accuse-command [seat]
+  (str "accuse " seat))

@@ -6,7 +6,7 @@ Feature: Web game terminal
     Given I have started a reference game in the web page
     When I type "hello" at the prompt
     Then I see "Signal's noisy. Rephrase."
-    And I see "accuse <passenger> [ally <passenger>]"
+    And I see "Accuse: accuse <passenger>"
     And I see that 3 questions remain
 
   Scenario: Web game terminal 02 - new starts a different puzzle

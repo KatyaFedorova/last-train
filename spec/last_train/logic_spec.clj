@@ -2,104 +2,80 @@
   (:require [speclj.core :refer :all]
             [last-train.logic :as logic]))
 
-(def w1 {:A :agent :B :sleeper :C :sleeper :D :awake})
-(def w2 {:A :sleeper :B :awake :C :agent :D :sleeper})
-(def w3 {:A :sleeper :B :awake :C :sleeper :D :agent})
+(def wa {:A :agent :B :human :C :human :D :human})
+(def wb {:A :human :B :agent :C :human :D :human})
+(def wd {:A :human :B :human :C :human :D :agent})
 
 (def reference-opening
-  [[:A [:count-eq :agent 0] true]
-   [:B [:not [:is :A :agent]] true]
-   [:C [:same :B :C] true]
-   [:D [:same :B :C] true]])
+  [[:A [:is :B :agent] true]
+   [:B [:is :A :agent] true]
+   [:C [:is :C :agent] false]
+   [:D [:is :C :agent] false]])
 (def reference-worlds (logic/consistent reference-opening))
 
 (describe "Worlds"
-  (it "has twelve distinct worlds of one Agent, one Awake and two Sleepers"
-    (should= 12 (count (set logic/all-worlds)))
+  (it "has four worlds, one per Agent seat, everyone else human"
+    (should= 4 (count (set logic/all-worlds)))
     (doseq [world logic/all-worlds]
-      (should= {:agent 1 :awake 1 :sleeper 2} (frequencies (vals world)))))
+      (should= {:agent 1 :human 3} (frequencies (vals world)))))
 
   (it "finds the Agent seat of a world"
-    (should= :A (logic/agent-seat w1))
-    (should= :D (logic/agent-seat w3)))
+    (should= :A (logic/agent-seat wa))
+    (should= :D (logic/agent-seat wd)))
 
   (it "lists the distinct Agent seats of worlds in seat order"
-    (should= [:A :C :D] (logic/agent-seats [w3 w1 w2 w1]))))
+    (should= [:A :B :D] (logic/agent-seats [wd wa wb wa]))))
 
 (describe "Proposition evaluation"
   (it "evaluates Is"
-    (should (logic/evaluate [:is :A :agent] w1))
-    (should-not (logic/evaluate [:is :B :agent] w1))
-    (should (logic/evaluate [:is :D :awake] w1)))
-
-  (it "evaluates Same"
-    (should (logic/evaluate [:same :B :C] w1))
-    (should-not (logic/evaluate [:same :A :B] w1)))
-
-  (it "evaluates CountEq"
-    (should (logic/evaluate [:count-eq :sleeper 2] w1))
-    (should-not (logic/evaluate [:count-eq :agent 0] w1)))
+    (should (logic/evaluate [:is :A :agent] wa))
+    (should-not (logic/evaluate [:is :B :agent] wa))
+    (should (logic/evaluate [:is :D :human] wa)))
 
   (it "evaluates Not, And and Or"
-    (should (logic/evaluate [:not [:is :B :agent]] w1))
-    (should (logic/evaluate [:and [:is :A :agent] [:is :D :awake]] w1))
-    (should-not (logic/evaluate [:and [:is :A :agent] [:is :B :awake]] w1))
-    (should (logic/evaluate [:or [:is :B :agent] [:is :A :agent]] w1))
-    (should-not (logic/evaluate [:or [:is :B :agent] [:is :C :agent]] w1)))
+    (should (logic/evaluate [:not [:is :B :agent]] wa))
+    (should (logic/evaluate [:and [:is :A :agent] [:is :D :human]] wa))
+    (should-not (logic/evaluate [:and [:is :A :agent] [:is :B :agent]] wa))
+    (should (logic/evaluate [:or [:is :B :agent] [:is :A :agent]] wa))
+    (should-not (logic/evaluate [:or [:is :B :agent] [:is :C :agent]] wa)))
 
   (it "rejects an unknown proposition"
-    (should-throw (logic/evaluate [:maybe :A] w1))))
+    (should-throw (logic/evaluate [:maybe :A] wa))))
 
 (describe "What a passenger can say"
-  (it "lets the Awake passenger assert only truths"
-    (should (logic/can-say? w1 :D [:is :A :agent]))
-    (should-not (logic/can-say? w1 :D [:is :B :agent])))
+  (it "lets a human assert only truths"
+    (should (logic/can-say? wa :D [:is :A :agent]))
+    (should-not (logic/can-say? wa :D [:is :B :agent])))
 
   (it "lets the Agent assert only falsehoods"
-    (should-not (logic/can-say? w1 :A [:is :A :agent]))
-    (should (logic/can-say? w1 :A [:is :B :agent])))
-
-  (it "lets a Sleeper assert what is true when everyone is a Sleeper"
-    (should-not (logic/can-say? w1 :B [:is :A :agent]))
-    (should (logic/can-say? w1 :B [:is :A :sleeper]))
-    (should (logic/can-say? w1 :B [:same :A :D]))
-    (should (logic/can-say? w1 :B [:count-eq :agent 0]))))
+    (should-not (logic/can-say? wa :A [:is :A :agent]))
+    (should (logic/can-say? wa :A [:is :B :agent]))))
 
 (describe "Consistent worlds"
   (it "keeps every world when there are no facts"
     (should= logic/all-worlds (logic/consistent [])))
 
-  (it "leaves the three reference worlds after the reference opening"
-    (should= #{w1 w2 w3} (set (logic/consistent reference-opening)))
-    (should= 3 (count (logic/consistent reference-opening))))
+  (it "leaves Vera and Tomasz as suspects after the reference opening"
+    (should= #{wa wb} (set reference-worlds)))
 
   (it "narrows a given world set with answered facts"
-    (let [worlds (logic/consistent reference-opening)]
-      (should= [w1 w2] (logic/consistent [[:B [:is :D :agent] false]] worlds)))))
+    (should= [wa] (logic/consistent [[:C [:is :A :agent] true]] reference-worlds))))
 
 (describe "Questions"
-  (it "offers 72 legal questions"
-    (should= 72 (count logic/questions))
-    (should= 72 (count (set logic/questions))))
-
-  (it "asks each speaker about each seat and role, and each pair of seats"
-    (should-contain [:B [:is :D :agent]] logic/questions)
-    (should-contain [:A [:same :C :D]] logic/questions)
-    (should-not-contain [:A [:same :D :C]] logic/questions)))
+  (it "asks each speaker whether each seat is the Agent"
+    (should= 16 (count (set logic/questions)))
+    (should-contain [:B [:is :D :agent]] logic/questions)))
 
 (describe "Solvability"
   (it "is solved when every world has the same Agent"
-    (should (logic/solvable? [w1] 0)))
+    (should (logic/solvable? [wa] 0)))
 
   (it "is not solved at depth zero with several Agent candidates"
     (should= false (logic/solvable? reference-worlds 0)))
 
-  (it "needs both answer branches to be solvable"
-    (should= false (logic/solvable? reference-worlds 1))
-    (should= true (logic/solvable? [w1 w2] 1)))
+  (it "solves the reference puzzle with one question to a trusted passenger"
+    (should (logic/solvable? reference-worlds 1)))
 
-  (it "is not solvable with one question for the reference puzzle"
-    (should-not (logic/solvable? reference-worlds 1)))
-
-  (it "is solvable with two adaptive questions for the reference puzzle"
-    (should (logic/solvable? reference-worlds 2))))
+  (it "needs two questions for three suspects"
+    (should-not (logic/solvable? [wa wb wd] 1))
+    (should (logic/solvable? [wa wb wd] 2))))

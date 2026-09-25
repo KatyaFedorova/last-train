@@ -5,110 +5,88 @@
 (def names {:A "Vera" :B "Tomasz" :C "Ilse" :D "Mr. Grey"})
 
 (describe "Parsing propositions"
-  (it "parses kind claims about seats"
+  (it "parses Agent claims about seats"
+    (should= [:is :A :agent] (english/parse-prop "A is the Agent" {}))
     (should= [:is :A :agent] (english/parse-prop "A is an Agent" {}))
-    (should= [:is :D :awake] (english/parse-prop "D is Awake" {}))
-    (should= [:is :C :sleeper] (english/parse-prop "C is a Sleeper" {})))
+    (should= [:is :D :human] (english/parse-prop "D is human" {})))
 
-  (it "parses negated kind claims"
-    (should= [:not [:is :A :agent]] (english/parse-prop "A is not an Agent" {})))
+  (it "parses negated claims"
+    (should= [:not [:is :A :agent]] (english/parse-prop "A is not the Agent" {})))
 
-  (it "parses same-kind claims"
-    (should= [:same :C :D] (english/parse-prop "C and D are the same kind" {}))
-    (should= [:not [:same :C :D]] (english/parse-prop "C and D are not the same kind" {})))
-
-  (it "parses counting claims"
-    (should= [:count-eq :agent 0] (english/parse-prop "exactly 0 passengers are Agents" {}))
-    (should= [:count-eq :sleeper 2] (english/parse-prop "exactly 2 passengers are Sleepers" {}))
-    (should= [:count-eq :agent 0] (english/parse-prop "There are no Agents on this train" {})))
+  (it "parses one-of-two claims"
+    (should= [:or [:is :B :agent] [:is :C :agent]] (english/parse-prop "B or C is the Agent" {})))
 
   (it "parses negation, conjunction and disjunction"
-    (should= [:not [:is :A :agent]] (english/parse-prop "it is not true that A is an Agent" {}))
-    (should= [:and [:is :A :agent] [:is :D :awake]]
-             (english/parse-prop "A is an Agent and D is Awake" {}))
-    (should= [:or [:is :A :agent] [:is :B :agent]]
-             (english/parse-prop "A is an Agent or B is an Agent" {})))
+    (should= [:not [:is :A :agent]] (english/parse-prop "it is not true that A is the Agent" {}))
+    (should= [:and [:is :A :agent] [:is :D :human]]
+             (english/parse-prop "A is the Agent and D is human" {}))
+    (should= [:or [:is :A :agent] [:is :B :human]]
+             (english/parse-prop "A is the Agent or B is human" {})))
 
   (it "resolves persona names and the speaker's own pronouns"
-    (should= [:is :D :agent] (english/parse-prop "Mr. Grey is an Agent" {:names names}))
-    (should= [:same :B :C] (english/parse-prop "Tomasz and I are the same kind" {:names names :self :C}))
-    (should= [:not [:is :C :agent]] (english/parse-prop "I am not an Agent" {:names names :self :C})))
+    (should= [:is :D :agent] (english/parse-prop "Mr. Grey is the Agent" {:names names}))
+    (should= [:not [:is :C :agent]] (english/parse-prop "I am not the Agent" {:names names :self :C})))
 
   (it "ignores case and trailing punctuation"
-    (should= [:is :A :agent] (english/parse-prop "vera is an agent." {:names names})))
+    (should= [:is :A :agent] (english/parse-prop "vera is the agent." {:names names})))
 
   (it "returns nil for text it cannot read"
     (should-be-nil (english/parse-prop "what is love?" {}))
-    (should-be-nil (english/parse-prop "A is an Agent and the walls are listening" {}))
-    (should-be-nil (english/parse-prop "A is an Agent or the walls are listening" {}))
-    (should-be-nil (english/parse-prop "Neo is an Agent" {:names names}))
-    (should-be-nil (english/parse-prop "I am an Agent" {}))))
+    (should-be-nil (english/parse-prop "A is the Agent and the walls are listening" {}))
+    (should-be-nil (english/parse-prop "Neo is the Agent" {:names names}))
+    (should-be-nil (english/parse-prop "I am the Agent" {}))))
 
 (describe "Parsing questions"
-  (it "parses kind questions"
+  (it "parses Agent and human questions"
+    (should= [:is :D :agent] (english/parse-question "is D the Agent?" {}))
     (should= [:is :D :agent] (english/parse-question "is D an Agent?" {}))
-    (should= [:is :A :awake] (english/parse-question "Is Vera awake?" {:names names}))
-    (should= [:is :C :sleeper] (english/parse-question "is Ilse a Sleeper" {:names names})))
-
-  (it "parses same-kind questions"
-    (should= [:same :C :D] (english/parse-question "are C and D the same kind?" {})))
+    (should= [:is :A :human] (english/parse-question "Is Vera human?" {:names names})))
 
   (it "resolves you to the addressed passenger"
-    (should= [:is :A :agent] (english/parse-question "are you an Agent?" {:self :A}))
-    (should= [:same :A :B] (english/parse-question "are you and Tomasz the same kind?" {:names names :self :A})))
+    (should= [:is :A :agent] (english/parse-question "are you the Agent?" {:self :A})))
 
   (it "rejects anything that is not a single supported question"
     (should-be-nil (english/parse-question "what is love?" {}))
-    (should-be-nil (english/parse-question "is A an Agent and is B awake?" {}))
-    (should-be-nil (english/parse-question "is Neo an Agent?" {:names names}))))
+    (should-be-nil (english/parse-question "is A the Agent and is B human?" {}))
+    (should-be-nil (english/parse-question "is Neo the Agent?" {:names names}))))
 
 (describe "Rendering"
   (it "renders statements with persona names"
-    (should= "There are no Agents on this train."
-             (english/render-statement [:count-eq :agent 0] true {:names names :self :A}))
-    (should= "Vera is not an Agent."
-             (english/render-statement [:is :A :agent] false {:names names :self :B}))
-    (should= "Tomasz and I are the same kind."
-             (english/render-statement [:same :B :C] true {:names names :self :C}))
-    (should= "Tomasz and Ilse are the same kind."
-             (english/render-statement [:same :B :C] true {:names names :self :D})))
+    (should= "Tomasz is the Agent." (english/render-statement [:is :B :agent] true {:names names :self :A}))
+    (should= "Vera is not the Agent." (english/render-statement [:is :A :agent] false {:names names :self :B}))
+    (should= "I am not the Agent." (english/render-statement [:is :C :agent] false {:names names :self :C}))
+    (should= "Tomasz or Ilse is the Agent."
+             (english/render-statement [:or [:is :B :agent] [:is :C :agent]] true {:names names :self :A})))
 
   (it "renders other propositions"
-    (should= "I am a Sleeper." (english/render-statement [:is :B :sleeper] true {:names names :self :B}))
-    (should= "Vera is Awake." (english/render-statement [:is :A :awake] true {:names names}))
-    (should= "Vera and Ilse are not the same kind."
-             (english/render-statement [:same :A :C] false {:names names}))
-    (should= "Exactly 2 passengers are Sleepers."
-             (english/render-statement [:count-eq :sleeper 2] true {:names names}))
-    (should= "It is not true that exactly 2 passengers are Sleepers."
-             (english/render-statement [:count-eq :sleeper 2] false {:names names}))
-    (should= "A is an Agent and D is Awake."
-             (english/render-statement [:and [:is :A :agent] [:is :D :awake]] true {}))
-    (should= "A is an Agent or B is an Agent."
-             (english/render-statement [:or [:is :A :agent] [:is :B :agent]] true {})))
+    (should= "Vera is human." (english/render-statement [:is :A :human] true {:names names}))
+    (should= "It is not true that Tomasz or Ilse is the Agent."
+             (english/render-statement [:or [:is :B :agent] [:is :C :agent]] false {:names names}))
+    (should= "A is the Agent and D is human."
+             (english/render-statement [:and [:is :A :agent] [:is :D :human]] true {}))
+    (should= "I am the Agent or B is the Agent."
+             (english/render-statement [:or [:is :A :agent] [:is :B :agent]] true {:self :A})))
 
   (it "renders answers"
-    (should= "No. Mr. Grey is not an Agent."
+    (should= "No. Mr. Grey is not the Agent."
              (english/render-answer [:is :D :agent] false {:names names :self :B}))
-    (should= "Yes. I am an Agent."
+    (should= "Yes. I am the Agent."
              (english/render-answer [:is :B :agent] true {:names names :self :B})))
 
   (it "renders questions that parse back"
-    (should= "is D an Agent?" (english/render-question [:is :D :agent] {}))
-    (should= "are C and D the same kind?" (english/render-question [:same :C :D] {}))
-    (doseq [prop [[:is :A :sleeper] [:is :B :awake] [:same :A :D]]]
+    (should= "is D the Agent?" (english/render-question [:is :D :agent] {}))
+    (doseq [prop [[:is :A :agent] [:is :B :human]]]
       (should= prop (english/parse-question (english/render-question prop {:names names}) {:names names}))))
 
   (it "renders statements that parse back"
-    (doseq [[prop polarity self] [[[:count-eq :agent 0] true :A]
+    (doseq [[prop polarity self] [[[:is :B :agent] true :A]
                                   [[:is :A :agent] false :B]
-                                  [[:same :B :C] true :C]
-                                  [[:same :B :C] false :D]
-                                  [[:is :C :awake] true :C]]]
+                                  [[:is :C :agent] false :C]
+                                  [[:or [:is :B :agent] [:is :D :agent]] true :A]
+                                  [[:is :C :human] true :C]]]
       (should= (if polarity prop [:not prop])
                (english/parse-prop (english/render-statement prop polarity {:names names :self self})
                                    {:names names :self self})))))
-
 
 (describe "Naming seats"
   (it "resolves seat letters, persona names and the addressed passenger"

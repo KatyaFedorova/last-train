@@ -16,9 +16,6 @@
            last
            parse-long))
 
-(defn round-title [lines]
-  (some->> lines (keep #(second (re-matches #"^Round \d+ - (.+)$" %))) last))
-
 (defn answers-of
   "Yes/no answers (true/false) given by seat in lines, in order."
   [lines seat]
@@ -40,8 +37,9 @@
 
 (defn check-no-roles [lines]
   (let [text (str/join "\n" lines)]
-    (check (not (re-find #"AGENT|AWAKE|SLEEPER" text)) "Role tokens displayed")
-    (check (not (re-find #"(?i)is the agent|is your ally|is awake\b" text)) "A role is revealed")))
+    (check (not (re-find #"AGENT|HUMAN|:agent|:human" text)) "Role tokens displayed")
+    (check (not-any? #(and (not (re-matches statement-line %)) (re-find #"(?i)is the agent" %)) lines)
+           "The game itself names the Agent")))
 
 (defn check-questions-left [lines n]
   (check (= (parse-long n) (questions-left lines)) (str "Questions left: " (questions-left lines))))
@@ -51,18 +49,6 @@
   [recent text]
   (check (str/includes? (str/join "\n" recent) text)
          (str "Did not see " (pr-str text) " in " (vec recent))))
-
-(defn- same-title? [title shown]
-  (= (str/lower-case title) (some-> shown str/lower-case)))
-
-(defn check-round
-  "No round began in the recent lines and the game is in the titled round."
-  [recent lines title]
-  (check (nil? (round-title recent)) "The round changed")
-  (check (same-title? title (round-title lines)) (str "Round is " (round-title lines))))
-
-(defn check-advanced-round [recent title]
-  (check (same-title? title (round-title recent)) (str "Advanced to " (round-title recent))))
 
 (defn check-answer
   "Seat gave exactly one answer in the recent lines, and it was expected (yes/no)."

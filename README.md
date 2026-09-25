@@ -1,25 +1,23 @@
 # LAST TRAIN
 
-A deterministic, text based logic game set on a late night subway inside the Matrix. Four passengers are aboard: one Agent, one Awake ally, and two Sleepers. Read their statements, ask up to three yes or no questions, and identify the Agent.
+A deterministic, text based logic game set on a late night subway inside the Matrix. Four passengers are aboard, and one of them is the Agent. The Agent always lies; everyone else always tells the truth. Read what they say, ask up to three yes or no questions, and find the Agent.
 
 **Play it now: <https://katyafedorova.github.io/last-train/>**
 
 ## How to play
 
-Type commands at the green prompt, or in the terminal version:
+In the browser, tap **Ask** or **Accuse** on a passenger. You can also just start typing: every key goes to the prompt, no click needed.
 
 | Command | What it does |
 |---------|--------------|
-| `ask B Is D an Agent?` | Ask a passenger a yes or no question (costs one of your 3 questions) |
-| `ask C Are A and B the same kind?` | The other supported question form |
+| `ask B Is D the Agent?` | Ask a passenger a yes or no question (costs one of your 3 questions) |
 | `accuse A` | Accuse the Agent. This ends the game |
-| `accuse A ally D` | Accuse the Agent and name the Awake ally for a bonus |
 | `help` | Show the command syntax (web) |
 | `new` | Start a new game with a different puzzle (web) |
 
-Passengers can be named by seat letter (`A`–`D`) or by name. The Awake always tell the truth, and the Agent always lies. A Sleeper is honest but blind: they answer as if everyone were a Sleeper.
+Passengers can be named by seat letter (`A`–`D`) or by name. Tip: if two passengers accuse each other, one of them is the liar, so ask someone else.
 
-Score: 100 for the right Agent, plus 50 for the right ally, plus 25 for each unused question.
+Score: 100 for the right Agent, plus 25 for each unused question.
 
 ## Play in the browser locally
 
@@ -58,10 +56,10 @@ bb acceptance-spec   # specs for the acceptance runtime and scripts
 bb hardening         # focused hardening specs
 bb property          # property tests (kept out of the other runs)
 bb site              # build the static site into build/site/
-bb puzzle-search B C # find opening statements for a new puzzle (Agent B, Awake C)
+bb puzzle-search B   # find opening statements for a new puzzle (Agent in seat B)
 ```
 
-A new puzzle must pass `puzzles/valid?`, which enforces the puzzle rules in [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) §2.5. It then goes into `catalog` in `src/last_train/puzzles.cljc` and into the examples in `features/puzzle-catalog.feature`.
+A new puzzle must pass `puzzles/valid?`: the opening statements leave 2 or 3 suspects, and two questions always find the Agent. It then goes into `catalog` in `src/last_train/puzzles.cljc` and into the examples in `features/puzzle-catalog.feature`.
 
 The logic engine is deterministic and does not call an LLM. See [`docs/LAST_TRAIN_game_spec.md`](docs/LAST_TRAIN_game_spec.md) for the game rules and the reference puzzle.
 

@@ -34,11 +34,11 @@
 
 (describe "Terminal play"
   (it "prompts for each line and prints the game's replies"
-    (let [out (with-out-str (with-in-str "ask B is D an Agent?\naccuse A ally D\n"
+    (let [out (with-out-str (with-in-str "ask C is A the Agent?\naccuse A\n"
                               (cli/play puzzles/reference)))]
       (should-contain "LAST TRAIN\n" out)
-      (should-contain "> Tomasz (B): \"No. Mr. Grey is not an Agent.\"\n" out)
-      (should-contain "PERFECT RUN" out)
+      (should-contain "> Ilse (C): \"Yes. Vera is the Agent.\"\n" out)
+      (should-contain "WIN" out)
       (should (str/ends-with? out "GAME OVER\n"))))
 
   (it "stops when input runs out"

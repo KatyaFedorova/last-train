@@ -19,14 +19,14 @@
 
 (defn- puzzle-name [session] (get-in session [:game :puzzle :name]))
 
-(def syntax "Ask: ask <passenger> <question>   Accuse: accuse <passenger> [ally <passenger>]")
+(def syntax "Ask: ask <passenger> Is <passenger> the Agent?   Accuse: accuse <passenger>")
 
 (describe "Booting the web terminal"
   (it "starts the named puzzle"
     (let [session (boot "reference")]
       (should= "reference" (puzzle-name session))
       (should= "LAST TRAIN" (first (texts session)))
-      (should-contain "Vera (A): \"There are no Agents on this train.\"" (texts session))
+      (should-contain "Vera (A): \"Tomasz is the Agent.\"" (texts session))
       (should-contain "Questions left: 3" (texts session))))
 
   (it "boards a random train for an unknown puzzle"
@@ -43,18 +43,18 @@
 (describe "Typing commands"
   (it "echoes the command and shows the passenger's answer"
     (let [before (boot "reference")
-          after (submit before "ask B Is D an Agent?")]
-      (should= [{:text "> ask B Is D an Agent?" :kind :player}
-                {:text "Tomasz (B): \"No. Mr. Grey is not an Agent.\"" :kind :passenger}]
+          after (submit before "ask B Is D the Agent?")]
+      (should= [{:text "> ask B Is D the Agent?" :kind :player}
+                {:text "Tomasz (B): \"No. Mr. Grey is not the Agent.\"" :kind :passenger}]
                (take 2 (new-lines before after)))
       (should= 2 (get-in after [:game :questions-left]))))
 
   (it "ends the game and offers a new one"
-    (let [before (submit (boot "reference") "ask B Is D an Agent?")
-          lines (new-lines before (submit before "accuse A ally D"))]
+    (let [before (submit (boot "reference") "ask C Is A the Agent?")
+          lines (new-lines before (submit before "accuse A"))]
       (should= [:player :outcome :outcome :outcome :system] (map :kind lines))
       (should= "Type \"new\" to play again." (:text (last lines)))
-      (should (str/includes? (:text (second lines)) "PERFECT RUN"))))
+      (should (str/ends-with? (:text (second lines)) "WIN"))))
 
   (it "keeps offering a new game after it is over"
     (let [session (submit (boot "reference") "accuse D" "accuse A")]
@@ -84,6 +84,22 @@
 (describe "Hiding the roles"
   (it "never prints a role before the game is over"
     (doseq [{:keys [name]} puzzles/catalog]
-      (let [session (submit (boot name) "ask A Is B an Agent?" "hello" "help")]
+      (let [session (submit (boot name) "ask A Is B the Agent?" "hello" "help")]
         (doseq [text (texts session)]
-          (should-not (re-find #":agent|:awake|:sleeper|true-world" text)))))))
+          (should-not (re-find #":agent|:human|true-world" text)))))))
+
+(describe "Buttons"
+  (it "lists each passenger with seat, name and bio"
+    (let [{:keys [passengers questions-left over?]} (terminal/controls (boot "reference"))]
+      (should= ["A" "B" "C" "D"] (map :seat passengers))
+      (should= {:seat "D" :name "Mr. Grey" :bio "man in a grey suit with a newspaper"} (last passengers))
+      (should= 3 questions-left)
+      (should= false over?)))
+
+  (it "builds commands the game understands"
+    (let [session (submit (boot "reference")
+                          (terminal/ask-command "C" "A")
+                          (terminal/accuse-command "A"))]
+      (should-contain "Ilse (C): \"Yes. Vera is the Agent.\"" (texts session))
+      (should (:over? (terminal/controls session)))
+      (should= {:win? true :score 150} (get-in session [:game :outcome])))))

@@ -1,17 +1,15 @@
 (ns last-train.logic
-  "Deterministic logic engine: worlds, propositions and who can say what.")
+  "Deterministic logic engine: worlds, propositions and who can say what.
+  One Agent always lies; the other three passengers are humans who always
+  tell the truth.")
 
 (def seats [:A :B :C :D])
-(def roles [:agent :awake :sleeper])
+(def roles [:agent :human])
 
 (def all-worlds
-  (vec (for [agent seats
-             awake seats
-             :when (not= agent awake)]
+  (vec (for [agent seats]
          (into {} (for [seat seats]
-                    [seat (condp = seat agent :agent awake :awake :sleeper)])))))
-
-(def all-sleepers (zipmap seats (repeat :sleeper)))
+                    [seat (if (= seat agent) :agent :human)])))))
 
 (defn agent-seat [world]
   (first (filter #(= :agent (world %)) seats)))
@@ -24,17 +22,14 @@
   (let [[op x y] prop]
     (case op
       :is (= y (world x))
-      :same (= (world x) (world y))
-      :count-eq (= y (count (filter #{x} (vals world))))
       :not (not (evaluate x world))
       :and (and (evaluate x world) (evaluate y world))
       :or (or (evaluate x world) (evaluate y world)))))
 
 (defn can-say? [world speaker prop]
   (case (world speaker)
-    :awake (evaluate prop world)
-    :agent (not (evaluate prop world))
-    :sleeper (evaluate prop all-sleepers)))
+    :human (evaluate prop world)
+    :agent (not (evaluate prop world))))
 
 (defn consistent
   "Worlds in which every fact [speaker prop asserted?] holds."
@@ -46,16 +41,10 @@
                       facts))
             worlds)))
 
-(def seat-pairs
-  (for [[i x] (map-indexed vector seats)
-        y (drop (inc i) seats)]
-    [x y]))
-
 (def questions
-  (vec (concat (for [speaker seats seat seats role roles]
-                 [speaker [:is seat role]])
-               (for [speaker seats [x y] seat-pairs]
-                 [speaker [:same x y]]))))
+  "Every legal question: ask speaker whether seat is the Agent."
+  (vec (for [speaker seats seat seats]
+         [speaker [:is seat :agent]])))
 
 (defn solvable? [worlds depth]
   (cond

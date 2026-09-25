@@ -20,17 +20,12 @@
     (should (passes? (prop/for-all [[w facts] (gen/bind g/world #(gen/tuple (gen/return %) (gen/vector (g/fact %) 1 6)))]
                        (every? (set (logic/consistent (butlast facts))) (logic/consistent facts))))))
 
-  (it "has the Agent and the Awake passenger answer every proposition oppositely"
+  (it "has the Agent and a human answer every proposition oppositely"
     (should (passes? (prop/for-all [w g/world p g/prop]
-                       (let [seat-of (fn [r] (first (filter #(= r (w %)) logic/seats)))]
-                         (not= (logic/can-say? w (seat-of :agent) p)
-                               (logic/can-say? w (seat-of :awake) p)))))))
-
-  (it "has a Sleeper answer the same in every world"
-    (should (passes? (prop/for-all [p g/prop w1 g/world w2 g/world]
-                       (let [sleeper-in (fn [w] (first (filter #(= :sleeper (w %)) logic/seats)))]
-                         (= (logic/can-say? w1 (sleeper-in w1) p)
-                            (logic/can-say? w2 (sleeper-in w2) p)))))))
+                       (let [agent (logic/agent-seat w)
+                             human (first (remove #{agent} logic/seats))]
+                         (not= (logic/can-say? w agent p)
+                               (logic/can-say? w human p)))))))
 
   (it "treats negation as the opposite answer"
     (should (passes? (prop/for-all [w g/world speaker g/seat p g/prop]

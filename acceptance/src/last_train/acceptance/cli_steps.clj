@@ -61,19 +61,8 @@
   (transcript/check-answer (last-output world) seat expected)
   world)
 
-(defn- ask-twice [world speaker first-seat second-seat]
-  (-> world
-      (ask-cli speaker (str first-seat " is an Agent"))
-      (ask-cli speaker (str second-seat " is an Agent"))))
-
-(defn- check-both-answers [world seat expected]
-  (let [answers (transcript/answers-of (output world) seat)]
-    (check (= [(engine/yes-no expected) (engine/yes-no expected)] (take-last 2 answers))
-           (str "Answers were " (vec answers)))
-    world))
-
-(defn accuse [world agent ally]
-  (type-line world (str "accuse " agent (when ally (str " ally " ally)))))
+(defn accuse [world agent]
+  (type-line world (str "accuse " agent)))
 
 (defn check-over [world]
   (check (get-in world [:session :state :over?]) "The game is still running")
@@ -90,6 +79,4 @@
    [#"^I have (\d+) unused questions?$" check-questions-left]
    [#"^the game does not display the true passenger roles$" check-no-roles]
    [#"^I type \"(.+)\"$" type-line]
-   [#"^passenger (\S+)'s template answer is (\S+)$" check-template-answer]
-   [#"^I ask passenger (\S+) about (\S+) and then (\S+) as Agents$" ask-twice]
-   [#"^passenger (\S+) answers (\S+) to both questions$" check-both-answers]])
+   [#"^passenger (\S+)'s template answer is (\S+)$" check-template-answer]])

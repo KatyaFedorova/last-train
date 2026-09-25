@@ -4,11 +4,8 @@
   the addressed passenger, reachable as I/me/you)."
   (:require [clojure.string :as str]))
 
-(def ^:private kind-singular {"an agent" :agent "awake" :awake "a sleeper" :sleeper})
-(def ^:private kind-plural {"agents" :agent "agent" :agent "awake" :awake
-                            "sleepers" :sleeper "sleeper" :sleeper})
-(def ^:private singular-kind-text {:agent "an Agent" :awake "Awake" :sleeper "a Sleeper"})
-(def ^:private plural-kind-text {:agent "Agents" :awake "Awake" :sleeper "Sleepers"})
+(def ^:private kind-words {"the agent" :agent "an agent" :agent "human" :human "a human" :human})
+(def ^:private kind-text {:agent "the Agent" :human "human"})
 
 (defn- references [{:keys [names self]}]
   (merge (into {} (for [seat [:A :B :C :D]] [(str/lower-case (name seat)) seat]))
@@ -39,17 +36,12 @@
 
 (defn- atomic-prop [text refs]
   (let [ref (alternation (keys refs))
-        kind (alternation (keys kind-singular))
-        plural (alternation (keys kind-plural))
-        negate (fn [negated prop] (if negated [:not prop] prop))]
+        kind (alternation (keys kind-words))]
     (if-let [[_ x negated k] (re-matches (re-pattern (str ref " (?:is|am) (not )?" kind)) text)]
-      (negate negated [:is (refs x) (kind-singular k)])
-      (if-let [[_ x y negated] (re-matches (re-pattern (str ref " and " ref " are (not )?the same kind")) text)]
-        (negate negated [:same (refs x) (refs y)])
-        (if-let [[_ n k] (re-matches (re-pattern (str "exactly (\\d+) passengers? (?:are|is) " plural)) text)]
-          [:count-eq (kind-plural k) (parse-long n)]
-          (when (= "there are no agents on this train" text)
-            [:count-eq :agent 0]))))))
+      (let [prop [:is (refs x) (kind-words k)]]
+        (if negated [:not prop] prop))
+      (when-let [[_ x y] (re-matches (re-pattern (str ref " or " ref " (?:is|am) the agent")) text)]
+        [:or [:is (refs x) :agent] [:is (refs y) :agent]]))))
 
 (declare ^:private compound-prop)
 
@@ -77,44 +69,38 @@
   "Proposition asked by a supported yes/no question, or nil."
   [text context]
   (let [refs (references context)
-        ref (seat-pattern context)
-        text (normalize text)]
-    (if-let [[_ x k] (re-matches (re-pattern (str "(?:is|are|am) " ref " " (alternation (keys kind-singular)))) text)]
-      [:is (refs x) (kind-singular k)]
-      (when-let [[_ x y] (re-matches (re-pattern (str "are " ref " and " ref " the same kind")) text)]
-        [:same (refs x) (refs y)]))))
+        ref (seat-pattern context)]
+    (when-let [[_ x k] (re-matches (re-pattern (str "(?:is|are|am) " ref " " (alternation (keys kind-words))))
+                                   (normalize text))]
+      [:is (refs x) (kind-words k)])))
 
 (defn- seat-name [seat {:keys [names self]}]
   (if (= seat self) "I" (get names seat (name seat))))
 
-(defn- pair-names [x y {:keys [self] :as context}]
-  (let [[x y] (if (= x self) [y x] [x y])]
-    (str (seat-name x context) " and " (seat-name y context))))
-
 (defn- is-clause [seat role negated context]
   (let [subject (seat-name seat context)]
-    (str subject (if (= "I" subject) " am " " is ") (when negated "not ") (singular-kind-text role))))
+    (str subject (if (= "I" subject) " am " " is ") (when negated "not ") (kind-text role))))
 
 (declare ^:private clause)
 
-(defn- negated-clause [prop context]
-  (let [[op x y] prop]
-    (case op
-      :is (is-clause x y true context)
-      :same (str (pair-names x y context) " are not the same kind")
-      (str "it is not true that " (clause prop context)))))
+(defn- either-agent?
+  "True for 'X or Y is the Agent' about two other passengers."
+  [[op x y] {:keys [self]}]
+  (and (= :or op)
+       (= :is (first x)) (= :agent (last x))
+       (= :is (first y)) (= :agent (last y))
+       (not= self (second x)) (not= self (second y))))
 
 (defn- clause [prop context]
   (let [[op x y] prop]
-    (case op
-      :is (is-clause x y false context)
-      :same (str (pair-names x y context) " are the same kind")
-      :count-eq (if (= [:agent 0] [x y])
-                  "there are no Agents on this train"
-                  (str "exactly " y " passengers are " (plural-kind-text x)))
-      :and (str (clause x context) " and " (clause y context))
-      :or (str (clause x context) " or " (clause y context))
-      :not (negated-clause x context))))
+    (cond
+      (= :is op) (is-clause x y false context)
+      (either-agent? prop context) (str (seat-name (second x) context) " or "
+                                        (seat-name (second y) context) " is the Agent")
+      (and (= :not op) (= :is (first x))) (is-clause (second x) (last x) true context)
+      (= :not op) (str "it is not true that " (clause x context))
+      (= :and op) (str (clause x context) " and " (clause y context))
+      (= :or op) (str (clause x context) " or " (clause y context)))))
 
 (defn- sentence [text]
   (str (str/upper-case (subs text 0 1)) (subs text 1) "."))
@@ -127,9 +113,5 @@
 (defn render-answer [prop yes? context]
   (str (if yes? "Yes. " "No. ") (render-statement prop yes? context)))
 
-(defn render-question [prop context]
-  (let [[op x y] prop
-        context (dissoc context :self)]
-    (case op
-      :is (str "is " (seat-name x context) " " (singular-kind-text y) "?")
-      :same (str "are " (pair-names x y context) " the same kind?"))))
+(defn render-question [[_ x role] context]
+  (str "is " (seat-name x (dissoc context :self)) " " (kind-text role) "?"))

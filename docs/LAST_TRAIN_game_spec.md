@@ -1,5 +1,7 @@
 # last-train-matrix-game
 
+> **Current rules (easy mode).** The shipped game was simplified from the design below. There are no Awake or Sleeper roles: one Agent always lies and the other three passengers are humans who always tell the truth (4 possible worlds). The only question is "Is X the Agent?". The opening leaves 2 or 3 suspects and two questions always suffice; the player gets three. Score = 100 for the Agent + 25 per unused question. There are no rounds and no ally bonus. The web page has Ask/Accuse buttons on each passenger. The rest of this document is the original, harder design.
+
 LAST TRAIN — a Matrix-style logic game
 
 A short text game with 5 rounds and about 5–8 minutes of play. You're in a subway car inside the Matrix with four passengers. One of them is an Agent. You get a few questions before the next stop. Find the Agent.

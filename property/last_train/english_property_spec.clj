@@ -13,7 +13,7 @@
 
 (def ^:private inline-literal
   "A literal whose negation stays inside its clause (\"is not\", \"are not\")."
-  (gen/such-that (fn [[op inner]] (or (not= :not op) (#{:is :same} (first inner))))
+  (gen/such-that (fn [[op inner]] (or (not= :not op) (= :is (first inner))))
                  g/literal 100))
 
 (def statement

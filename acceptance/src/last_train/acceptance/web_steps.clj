@@ -40,13 +40,8 @@
 (defn ask-web [world seat question]
   (type-command world (str "ask " seat " " question)))
 
-(defn- ask-twice [world seat first-seat second-seat]
-  (-> world
-      (ask-web seat (str "Is " first-seat " an Agent?"))
-      (ask-web seat (str "Is " second-seat " an Agent?"))))
-
-(defn accuse [world agent ally]
-  (type-command world (str "accuse " agent (when ally (str " ally " ally)))))
+(defn accuse [world agent]
+  (type-command world (str "accuse " agent)))
 
 (defn- check-opening-statements [world]
   (check (= 4 (count (transcript/statements (lines world)))) "Expected four opening statements")
@@ -59,7 +54,7 @@
 
 (defn- check-no-roles [world]
   (transcript/check-no-roles (lines world))
-  (check (not (re-find #":agent|:awake|:sleeper|true-world" @page-html)) "The page carries the true roles")
+  (check (not (re-find #":agent|:human|true-world" @page-html)) "The page carries the true roles")
   world)
 
 (defn- check-prompt [world]
@@ -71,11 +66,23 @@
          (str "The page does not show how to type " command))
   world)
 
-(defn- check-ask-prompt [world]
-  (-> world check-prompt (check-syntax-shown "ask <passenger> <question>")))
+(defn- check-type-prompt [world]
+  (-> world check-prompt (check-syntax-shown "ask <passenger>") (check-syntax-shown "accuse <passenger>")))
 
-(defn- check-accuse-prompt [world]
-  (-> world check-prompt (check-syntax-shown "accuse <passenger> [ally <passenger>]")))
+(defn- check-buttons
+  "The page has a passenger board, and each passenger's Ask and Accuse
+  buttons send commands the game accepts."
+  [world]
+  (check (str/includes? @page-html "id=\"board\"") "The page has no passenger board")
+  (let [{:keys [passengers questions-left over?]} (terminal/controls (session world))]
+    (check (= ["A" "B" "C" "D"] (map :seat passengers)) (str "Buttons for " (vec passengers)))
+    (check (and (= 3 questions-left) (not over?)) "The buttons start disabled")
+    (doseq [{:keys [seat]} passengers]
+      (let [asked (terminal/submit (session world) (terminal/ask-command seat "A") first-draw)
+            accused (terminal/submit (session world) (terminal/accuse-command seat) first-draw)]
+        (check (= 2 (get-in asked [:game :questions-left])) (str "Ask " seat " was not understood"))
+        (check (get-in accused [:game :over?]) (str "Accuse " seat " was not understood")))))
+  world)
 
 (defn- check-answer [world seat expected]
   (transcript/check-answer (new-lines world) seat expected)
@@ -88,7 +95,7 @@
 
 (defn- check-not-reference [world]
   (check (not= "reference" (get-in (session world) [:game :puzzle :name])) "The reference puzzle started again")
-  (check (not-any? #(str/includes? % "Vera (A): \"There are no Agents on this train.\"") (new-lines world))
+  (check (not-any? #(str/includes? % "Vera (A): \"Tomasz is the Agent.\"") (new-lines world))
          "The reference opening statements are shown again")
   world)
 
@@ -103,11 +110,10 @@
    [#"^I see the four passenger opening statements$" check-opening-statements]
    [#"^I see that (\d+) questions remain$" check-questions-left]
    [#"^I do not see the passengers' true roles$" check-no-roles]
-   [#"^I can type a question for a chosen passenger at the prompt$" check-ask-prompt]
-   [#"^I can type an accusation with an optional ally at the prompt$" check-accuse-prompt]
+   [#"^I can ask or accuse each passenger with a button$" check-buttons]
+   [#"^I can type a question or an accusation at the prompt$" check-type-prompt]
    [#"^I type \"(.+)\" at the prompt$" type-command]
    [#"^I enter \"(.+)\" as a question for passenger (\S+)$" (fn [world question seat] (ask-web world seat question))]
    [#"^I ask passenger (\S+) \"(.+)\"$" ask-web]
-   [#"^I ask passenger (\S+) whether (\S+) and then (\S+) are Agents$" ask-twice]
    [#"^passenger (\S+) answers (\S+)$" check-answer]
    [#"^a different puzzle starts$" check-not-reference]])

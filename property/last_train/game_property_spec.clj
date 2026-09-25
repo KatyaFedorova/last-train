@@ -18,10 +18,8 @@
                        (let [ss (states lines)
                              true-world (:true-world puzzles/reference)]
                          (and (every? #(<= 0 (:questions-left %) 3) ss)
-                              (every? #(<= 2 (:round %) 5) ss)
                               (every? #(some #{true-world} (:live-worlds %)) ss)
-                              (apply >= (map :questions-left ss))
-                              (every? #(= (+ (:round %) (:questions-left %)) 5) ss)))))))
+                              (apply >= (map :questions-left ss))))))))
 
   (it "never changes once the game is over"
     (should (passes? (prop/for-all [lines (gen/vector g/player-line 0 8) after g/player-line]

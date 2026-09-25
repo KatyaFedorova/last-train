@@ -1,5 +1,5 @@
 (ns last-train.puzzle-search
-  "Dev tool: bb puzzle-search <agent-seat> <awake-seat> [limit]
+  "Dev tool: bb puzzle-search <agent-seat> [limit]
   Prints opening statement sets that follow the puzzle rules for that true world.
   Kept out of src/ so test tools skip it."
   (:require [last-train.english :as english]
@@ -7,13 +7,12 @@
             [last-train.puzzles :as puzzles]))
 
 (def ^:private props
-  (concat (for [seat logic/seats role logic/roles
-                prop [[:is seat role] [:not [:is seat role]]]]
+  (concat (for [seat logic/seats
+                prop [[:is seat :agent] [:not [:is seat :agent]]]]
             prop)
-          (for [[x y] logic/seat-pairs
-                prop [[:same x y] [:not [:same x y]]]]
-            prop)
-          [[:count-eq :agent 0]]))
+          (for [[i x] (map-indexed vector logic/seats)
+                y (drop (inc i) logic/seats)]
+            [:or [:is x :agent] [:is y :agent]])))
 
 (defn- sayable [world seat]
   (for [prop props :when (logic/can-say? world seat prop)]
@@ -28,14 +27,10 @@
         :when (puzzles/valid? {:true-world world :opening opening})]
     opening))
 
-(defn -main [agent awake & [limit]]
-  (let [agent (keyword agent)
-        awake (keyword awake)
-        world (into {} (for [seat logic/seats]
-                         [seat (condp = seat agent :agent awake :awake :sleeper)]))]
+(defn -main [agent & [limit]]
+  (let [world (first (filter #(= (keyword agent) (logic/agent-seat %)) logic/all-worlds))]
     (doseq [opening (take (or (some-> limit parse-long) 10) (candidates world))]
       (prn opening)
       (doseq [[seat prop polarity] opening]
         (println " " (name seat) (english/render-statement prop polarity {:self seat})))
-      (println "  worlds:" (count (logic/consistent opening))
-               "agents:" (logic/agent-seats (logic/consistent opening))))))
+      (println "  suspects:" (logic/agent-seats (logic/consistent opening))))))
