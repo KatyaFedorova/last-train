@@ -3,27 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#c8102e">
+<meta name="theme-color" content="#ffffff">
 <title>Nova Bank</title>
 <style>
   :root {
     --bg-top: #9e0b22;
     --bg-mid: #d6142f;
     --bg-bottom: #ffffff;
-    --ink: #ffffff;
+    --ink: #c8102e;
     --dark: #d6142f;
     --sheet: #ffffff;
     --text: #111417;
     --muted: #8a94a0;
     --accent: #e8434b;
     --green: #ffffff;
-    --pill: rgba(255, 255, 255, 0.7);
+    --pill: #fde6e9;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background: #7a0919;
+    background: #ffffff;
     color: var(--ink);
     display: flex;
     justify-content: center;
@@ -36,7 +36,7 @@
     width: 100%;
     max-width: 460px;
     min-height: 100vh;
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 30%, #ef6b7b 52%, #fde6e9 68%, var(--bg-bottom) 80%, #ffffff 100%);
+    background: #ffffff;
     overflow-x: hidden;
     padding-bottom: 120px;
   }
@@ -50,7 +50,7 @@
   }
   .avatar {
     width: 42px; height: 42px; border-radius: 50%;
-    background: #fff; color: #c8102e;
+    background: #c8102e; color: #fff;
     display: grid; place-items: center;
     font-weight: 600; font-size: 15px;
   }
@@ -58,14 +58,14 @@
   .badge {
     position: absolute; top: -8px; right: -10px;
     min-width: 19px; height: 19px; border-radius: 10px;
-    background: #fff; color: var(--accent); font-size: 11px; font-weight: 700;
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
     display: grid; place-items: center; padding: 0 5px;
-    border: 2px solid var(--bg-top);
+    border: 2px solid #fff;
   }
-  .dot { position: absolute; top: -3px; right: -4px; width: 11px; height: 11px; border-radius: 50%; background: #fff; }
+  .dot { position: absolute; top: -3px; right: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); }
   .spacer { flex: 1; }
   .cashback { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; }
-  .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.18); }
+  .divider { width: 1px; height: 28px; background: rgba(200,16,46,0.2); }
 
   /* Balance */
   .balance {
@@ -74,7 +74,7 @@
   }
   .balance .add {
     width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(255,255,255,0.12); display: grid; place-items: center;
+    background: #fde6e9; display: grid; place-items: center;
   }
   .balance .amount { font-size: 50px; font-weight: 700; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 
@@ -105,8 +105,8 @@
     transition: transform 0.3s;
     user-select: none;
   }
-  .card.light { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; }
-  .card.red { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; }
+  .card.light { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; border: 1px solid #f3c9cf; }
+  .card.red { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; border: 1px solid #f3c9cf; }
   .card .row { display: flex; justify-content: space-between; align-items: center; }
   .card .brand { font-weight: 800; font-style: italic; letter-spacing: 0.5px; font-size: 15px; }
   .card .cur { font-size: 12px; letter-spacing: 1px; opacity: 0.8; }
@@ -145,7 +145,7 @@
     color: var(--text);
     border-radius: 28px;
     padding: 22px 18px 10px;
-    box-shadow: 0 -2px 30px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 30px rgba(200,16,46,0.12);
   }
   .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .sheet-head h2 { font-size: 20px; font-weight: 700; }
@@ -192,29 +192,29 @@
   <header class="top">
     <button class="avatar" id="avatar">КФ</button>
     <button class="icon-btn" aria-label="Чат">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/><path d="M8 13.5c1.8 2 6.2 2 8 0" stroke="#d6142f" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="#c8102e"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/><path d="M8 13.5c1.8 2 6.2 2 8 0" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
       <span class="badge">2</span>
     </button>
     <div class="spacer"></div>
     <button class="cashback" aria-label="Кешбек">
       <span class="icon-btn">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M3 9h18v4H3zM4 13h7v8H4zM13 13h7v8h-7zM11 9h2v12h-2z"/><path d="M12 9C9 9 7 7.5 7.5 6S10.5 5 12 9Zm0 0c3 0 5-1.5 4.5-3S13.5 5 12 9Z"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#c8102e"><path d="M3 9h18v4H3zM4 13h7v8H4zM13 13h7v8h-7zM11 9h2v12h-2z"/><path d="M12 9C9 9 7 7.5 7.5 6S10.5 5 12 9Zm0 0c3 0 5-1.5 4.5-3S13.5 5 12 9Z"/></svg>
         <span class="dot"></span>
       </span>
       <span id="cashback">233 ₴</span>
     </button>
     <span class="divider"></span>
     <button class="icon-btn" aria-label="Профіль">
-      <svg width="34" height="30" viewBox="0 0 34 30" fill="#fff"><path d="M4 2l7 6h12l7-6v14c0 7-6 12-13 12S4 23 4 16Z"/><circle cx="12" cy="15" r="3" fill="#d6142f"/><circle cx="22" cy="15" r="3" fill="#d6142f"/><path d="M15 21h4l-2 2Z" fill="#d6142f"/></svg>
+      <svg width="34" height="30" viewBox="0 0 34 30" fill="#c8102e"><path d="M4 2l7 6h12l7-6v14c0 7-6 12-13 12S4 23 4 16Z"/><circle cx="12" cy="15" r="3" fill="#fff"/><circle cx="22" cy="15" r="3" fill="#fff"/><path d="M15 21h4l-2 2Z" fill="#fff"/></svg>
     </button>
     <button class="icon-btn" aria-label="Статистика">
-      <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><path d="M7.5 17V11M12 17V7M16.5 17v-4" stroke="#d6142f" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#c8102e"/><path d="M7.5 17V11M12 17V7M16.5 17v-4" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
     </button>
   </header>
 
   <section class="balance">
     <button class="add" aria-label="Поповнити">
-      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.5)"/><path d="M12 7v10M7 12h10" stroke="#d6142f" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c8102e"/><path d="M12 7v10M7 12h10" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <div class="amount" id="balance"></div>
   </section>
