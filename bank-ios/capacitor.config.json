@@ -1,0 +1,9 @@
+{
+  "appId": "com.katyafedorova.novabank",
+  "appName": "Nova Bank",
+  "webDir": "../bank-app",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#ffffff"
+  }
+}

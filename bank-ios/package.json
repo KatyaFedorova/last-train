@@ -1,0 +1,16 @@
+{
+  "name": "nova-bank-ios",
+  "private": true,
+  "description": "Native iOS shell (Capacitor) around the Nova Bank web app in ../bank-app",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.6.9",
+    "@capacitor/ios": "^7.6.9"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.9"
+  }
+}
