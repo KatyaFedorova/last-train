@@ -71,7 +71,6 @@
   .hello small { display: block; font-size: 12px; color: var(--muted); }
   .hello strong { font-size: 15px; font-weight: 600; }
   .spacer { flex: 1; }
-  .demo { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--red); background: var(--red-50); padding: 4px 8px; border-radius: 6px; }
   .icon-btn {
     position: relative; width: 40px; height: 40px; border-radius: 12px;
     display: grid; place-items: center; color: var(--ink-2);
@@ -209,6 +208,10 @@
   .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
   .sum { font-size: 15px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .sum.plus { color: var(--green); }
+  .sum.declined { color: #e5555c; font-weight: 500; }
+  .sub.declined { display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub.declined .x { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; background: #ef6b72; color: #fff; font-size: 9px; font-weight: 700; display: grid; place-items: center; }
+  .op .ico { border-radius: 50%; }
   .chev { color: #c3c8cd; width: 18px; height: 18px; }
   .empty { color: var(--muted); font-size: 14px; padding: 24px 0; text-align: center; }
 
@@ -324,6 +327,11 @@
   .radio-mark { width: 22px; height: 22px; color: var(--red); }
 
   .bars { display: flex; flex-direction: column; gap: 14px; }
+  .chart { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; align-items: end; height: 150px; margin: 6px 0 8px; }
+  .chart .col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; min-width: 0; }
+  .chart .b { width: 100%; max-width: 18px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #3fbf74, var(--green)); }
+  .chart .v { font-size: 9px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart .m { font-size: 10px; color: var(--muted); }
   .bar-row { display: flex; flex-direction: column; gap: 6px; }
   .bar-row .top-line { display: flex; justify-content: space-between; font-size: 14px; }
   .bar-row .top-line span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -352,6 +360,41 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: calc(100% - 32px); text-align: center;
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* PIN lock screen */
+  .lock {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--surface);
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(env(safe-area-inset-top) + 9vh) 24px calc(env(safe-area-inset-bottom) + 28px);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .lock.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+  .lock .avatar { width: 84px; height: 84px; font-size: 28px; box-shadow: 0 10px 24px -10px rgba(168, 13, 38, 0.6); }
+  .lock h1 { margin-top: 22px; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; text-align: center; }
+  .lock .lock-sub { margin-top: 8px; font-size: 16px; color: var(--muted); min-height: 22px; text-align: center; }
+  .lock .lock-sub.bad { color: var(--red); }
+  .pin-dots { display: flex; gap: 22px; margin-top: 26px; }
+  .pin-dots span { width: 16px; height: 16px; border-radius: 50%; background: #e9ecef; transition: background 0.15s, transform 0.15s; }
+  .pin-dots span.on { background: var(--red); transform: scale(1.1); }
+  .pin-dots.ok span { background: var(--green); }
+  .pin-dots.shake { animation: shake 0.4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+  .keypad {
+    margin-top: auto; width: 100%; max-width: 320px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 26px; justify-items: center;
+  }
+  .key {
+    width: 78px; height: 78px; border-radius: 50%;
+    background: var(--surface-2); font-size: 32px; font-weight: 500; text-align: center;
+    display: grid; place-items: center; transition: background 0.12s, transform 0.12s;
+  }
+  .key:active { background: #e6e9ec; transform: scale(0.95); }
+  .key.plain { background: none; }
+  .key.plain .i { width: 34px; height: 34px; }
+  .key.face { color: var(--red); }
+  .forgot { margin-top: 26px; align-self: flex-start; font-size: 16px; font-weight: 500; padding: 8px 4px; }
+  .lock .scan { color: var(--red); font-weight: 600; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; }
@@ -402,6 +445,11 @@
     <symbol id="i-watch" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 9v3l1.5 1.5M9 3h6l1 3.5M9 21h6l1-3.5M8 6.5 9 3M8 17.5 9 21"/></symbol>
     <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></symbol>
     <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 3 2V2l-3 2-3-2-3 2-3-2-3 2z"/><path d="M8 9h8M8 13h6"/></symbol>
+    <symbol id="i-face" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M8.5 15.5a5 5 0 0 0 7 0"/></symbol>
+    <symbol id="i-del" viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z" fill="currentColor"/><path d="m12.5 9.5 5 5M17.5 9.5l-5 5" stroke="#fff"/></symbol>
+    <symbol id="i-fork" viewBox="0 0 24 24"><path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 21V3c-2.5 1-4 4-4 8.5h4"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><rect x="4" y="3" width="14" height="6" rx="1.5"/><path d="M18 6h2v5h-8v3"/><rect x="10.5" y="14" width="3" height="7" rx="1"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></symbol>
   </defs>
 </svg>
 
@@ -412,7 +460,6 @@
       <button class="avatar" data-act="profile" aria-label="Профіль">КФ</button>
       <button class="hello" data-act="profile"><small>Добрий ранок,</small><strong>Катерина</strong></button>
       <div class="spacer"></div>
-      <span class="demo">Demo</span>
       <button class="icon-btn" data-act="chat" aria-label="Чат"><svg class="i"><use href="#i-chat"/></svg><span class="dot" id="chat-dot"></span></button>
       <button class="icon-btn" data-act="stats" aria-label="Статистика"><svg class="i"><use href="#i-chart"/></svg></button>
     </header>
@@ -452,6 +499,22 @@
     <button class="tab" data-act="tab" data-arg="more"><svg class="i"><use href="#i-grid"/></svg>Ще</button>
   </nav>
 
+  <section class="lock" id="lock" role="dialog" aria-label="Вхід за ПІН-кодом">
+    <div class="avatar">КФ</div>
+    <h1>З поверненням, Катерино!</h1>
+    <p class="lock-sub" id="lock-sub">Уведіть ПІН-код</p>
+    <div class="pin-dots" id="pin-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="keypad">
+      <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+      <button class="key plain face" data-key="face" aria-label="Увійти з Face ID"><svg class="i"><use href="#i-face"/></svg></button>
+      <button class="key" data-key="0">0</button>
+      <button class="key plain" data-key="del" aria-label="Стерти"><svg class="i"><use href="#i-del"/></svg></button>
+    </div>
+    <button class="forgot" id="forgot">Забули ПІН-код?</button>
+  </section>
+
   <div class="toast" id="toast" role="status"></div>
 </div>
 
@@ -467,14 +530,58 @@
   const rates = { UAH: 1, USD: 41.5, EUR: 45.2 };      // UAH per unit
   const limits = { UAH: 50000, USD: 2000, EUR: 2000 }; // daily spend limit
 
+  // Sample history: D = a purchase, DECLINED = a blocked subscription charge, INCOME = monthly income.
+  const D = (day, time, name, cat, sum, icon) => ({ day, time, name, cat, sum, icon });
+  const DECLINED = (day, time, name) => ({ day, time, name, cat: "Підписки", sum: -8, icon: "play", declined: true });
+  const INCOME = (day, period, sum) => ({ day, time: "10:00", name: "Зарахування доходу", cat: "Дохід", period, sum, icon: "in" });
+  // Colored category circles, like a real banking app.
+  const catColors = {
+    "Продукти": "linear-gradient(135deg,#f07a2a,#f3a249)",
+    "Кафе та ресторани": "linear-gradient(135deg,#7b45e8,#a573f2)",
+    "Кафе": "linear-gradient(135deg,#7b45e8,#a573f2)",
+    "Підписки": "linear-gradient(135deg,#e5262f,#f2545b)",
+    "Покупки": "linear-gradient(135deg,#d6439b,#ee6fb8)",
+    "Ремонт": "linear-gradient(135deg,#ef5a62,#f78b7b)",
+    "Подорожі": "linear-gradient(135deg,#ec3f5c,#f2708a)",
+    "Інше": "linear-gradient(135deg,#6f8790,#9db0b7)",
+    "Дохід": "linear-gradient(135deg,#17924d,#3fbf74)",
+    "Мобільний": "linear-gradient(135deg,#2d6cdf,#58a0f2)",
+    "Таксі": "linear-gradient(135deg,#e9a417,#f5c64a)",
+    "Здоровʼя": "linear-gradient(135deg,#119c9c,#3cc4bd)",
+  };
+  const icoStyle = (op) => catColors[op.cat] ? ` style="background:${catColors[op.cat]};color:#fff"` : "";
+
   const operations = {
     USD: [
-      { day: "Сьогодні", time: "08:12", name: "Frestive Perenenan", cat: "Продукти", sum: -24, icon: "cart" },
-      { day: "Сьогодні", time: "07:40", name: "Hilo Donut Seseh",   cat: "Кафе",     sum: -4,  icon: "coffee" },
-      { day: "Вчора",    time: "19:05", name: "Поповнення",          cat: "Перекази", sum: 500, icon: "in" },
-      { day: "Вчора",    time: "18:21", name: "Uber",                cat: "Таксі",    sum: -12, icon: "car" },
-      { day: "25 жовтня", time: "13:47", name: "Amazon",             cat: "Покупки",  sum: -86, icon: "bag" },
-      { day: "25 жовтня", time: "09:02", name: "Starbucks",          cat: "Кафе",     sum: -6,  icon: "coffee" },
+      D("Сьогодні", "09:14", "BALI BUDA RENON", "Продукти", -2, "cart"),
+      D("Вчора", "18:42", "FRESTIVE PERENENAN", "Продукти", -24, "cart"),
+      D("Вчора", "08:05", "HILO DONUT SESEH", "Кафе та ресторани", -4, "fork"),
+      D("25 жовтня", "19:30", "HILO DONUT SESEH", "Кафе та ресторани", -4, "fork"),
+      D("25 жовтня", "16:12", "SUNSET EYEWEAR CANGGU", "Покупки", -15, "heart"),
+      D("25 жовтня", "12:48", "OPEN HOUSE", "Кафе та ресторани", -6, "fork"),
+      D("25 жовтня", "09:20", "THE GENERAL", "Кафе та ресторани", -5, "fork"),
+      DECLINED("24 жовтня", "03:12", "Adobe"),
+      DECLINED("23 жовтня", "15:03", "Adobe"),
+      DECLINED("23 жовтня", "03:10", "Adobe"),
+      D("23 жовтня", "10:21", "HILO DONUT SESEH", "Кафе та ресторани", -12, "fork"),
+      D("23 жовтня", "08:47", "Списання AGUNG MOTOR TANAH LOT", "Інше", -2, "dots"),
+      D("22 жовтня", "19:55", "OPEN HOUSE CAFE SESEH", "Кафе та ресторани", -6, "fork"),
+      DECLINED("22 жовтня", "15:02", "Adobe"),
+      DECLINED("22 жовтня", "03:09", "Adobe"),
+      D("22 жовтня", "11:34", "INDOMARET F2SD - DIPONE", "Продукти", -1, "cart"),
+      D("22 жовтня", "10:18", "TOKO BANGUNAN SINAR MU", "Ремонт", -6, "tool"),
+      D("22 жовтня", "08:40", "OPEN HOUSE CAFE SESEH", "Кафе та ресторани", -9, "fork"),
+      D("21 жовтня", "20:11", "Списання", "Кафе та ресторани", -9, "fork"),
+      D("21 жовтня", "13:26", "TROPICAL NOMAD HO", "Кафе та ресторани", -5, "fork"),
+      DECLINED("21 жовтня", "03:08", "Adobe"),
+      DECLINED("16 жовтня", "03:05", "Adobe"),
+      DECLINED("15 жовтня", "15:01", "Adobe"),
+      DECLINED("15 жовтня", "03:04", "Adobe"),
+      D("15 жовтня", "12:15", "CK TITI BATU UBUD", "Продукти", -8, "cart"),
+      D("15 жовтня", "09:00", "LinkedIn", "Підписки", -28, "user"),
+      D("14 жовтня", "17:33", "PEPITO MARKET PELIATAN", "Продукти", -21, "cart"),
+      D("13 жовтня", "14:02", "AIRBNB", "Подорожі", -28, "home"),
+      D("13 жовтня", "09:41", "OPEN HOUSE CAFE UBUD", "Кафе та ресторани", -7, "fork"),
     ],
     UAH: [
       { day: "Сьогодні", time: "09:30", name: "Сільпо",   cat: "Продукти",    sum: -842,  icon: "cart" },
@@ -485,6 +592,53 @@
       { day: "25 жовтня", time: "10:00", name: "Netflix", cat: "Підписки", sum: -11, icon: "play" },
     ],
   };
+
+  // Earlier months: monthly income plus everyday spending, generated from a fixed seed
+  // so the list looks the same every time the app opens.
+  function buildHistory() {
+    const income = { "2025-9": 5283, "2025-10": 5347, "2025-11": 5192, "2026-0": 5418, "2026-1": 5316, "2026-2": 5264,
+      "2026-3": 5379, "2026-4": 6583, "2026-5": 6721, "2026-6": 6654, "2026-7": 6812, "2026-8": 6741 };
+    const monthsOf = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+    const monthNames = ["січень", "лютий", "березень", "квітень", "травень", "червень", "липень", "серпень", "вересень", "жовтень", "листопад", "грудень"];
+    const places = [
+      ["PEPITO MARKET PELIATAN", "Продукти", "cart", 8, 45], ["COCO MART UBUD", "Продукти", "cart", 3, 25],
+      ["INDOMARET", "Продукти", "cart", 1, 12], ["FRESTIVE PERENENAN", "Продукти", "cart", 10, 35],
+      ["BALI BUDA RENON", "Продукти", "cart", 2, 15], ["HILO DONUT SESEH", "Кафе та ресторани", "fork", 3, 14],
+      ["OPEN HOUSE CAFE SESEH", "Кафе та ресторани", "fork", 5, 15], ["SISTERFIELDS CANGGU", "Кафе та ресторани", "fork", 12, 30],
+      ["CRATE CAFE", "Кафе та ресторани", "fork", 6, 18], ["THE GENERAL", "Кафе та ресторани", "fork", 5, 12],
+      ["TROPICAL NOMAD HO", "Кафе та ресторани", "fork", 4, 10], ["GRAB* TRANSPORT", "Таксі", "car", 2, 12],
+      ["GOJEK", "Таксі", "car", 1, 8], ["AIRBNB", "Подорожі", "home", 25, 180],
+      ["GUARDIAN PHARMACY", "Здоровʼя", "heart", 4, 30], ["UNIQLO", "Покупки", "bag", 20, 70],
+      ["SUNSET EYEWEAR CANGGU", "Покупки", "heart", 10, 40], ["ACE HARDWARE", "Ремонт", "tool", 5, 25],
+      ["TELKOMSEL", "Мобільний", "phone", 5, 15],
+    ];
+    let seed = 20261027;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    const pick = (a) => a[Math.floor(rnd() * a.length)];
+    const time = () => `${String(8 + Math.floor(rnd() * 14)).padStart(2, "0")}:${String(Math.floor(rnd() * 60)).padStart(2, "0")}`;
+    const out = [];
+    // October 2026 (days 1-12; later days are in the list above), then September 2026 back to October 2025.
+    for (let i = 0; i < 13; i++) {
+      const y = i <= 9 ? 2026 : 2025, m = (9 - i + 12) % 12;
+      const label = (d) => `${d} ${monthsOf[m]}${y === 2025 ? " 2025" : ""}`;
+      const lastDay = new Date(y, m + 1, 0).getDate();
+      const maxDay = i === 0 ? 12 : lastDay;
+      const ops = [];
+      if (income[`${y}-${m}`]) ops.push({ d: lastDay, op: INCOME(label(lastDay), `${monthNames[m]} ${y}`, income[`${y}-${m}`]) });
+      if (maxDay >= 15) ops.push({ d: 15, op: D(label(15), "09:00", "LinkedIn", "Підписки", -28, "user") });
+      ops.push({ d: 3, op: D(label(3), "06:12", "Spotify", "Підписки", -6, "play") });
+      const count = 4 + Math.floor(rnd() * 4);
+      for (let k = 0; k < count; k++) {
+        const [name, cat, ic, lo, hi] = pick(places);
+        const d = 1 + Math.floor(rnd() * Math.min(maxDay, 28));
+        ops.push({ d, op: D(label(d), time(), name, cat, -Math.round(lo + rnd() * (hi - lo)), ic) });
+      }
+      ops.sort((a, b) => b.d - a.d || b.op.time.localeCompare(a.op.time));
+      out.push(...ops.map((o) => o.op));
+    }
+    return out;
+  }
+  operations.USD.push(...buildHistory());
 
   let cashback = 233;
   const credit = { limit: 50000, used: 0 };
@@ -566,9 +720,11 @@
       const plus = op.sum > 0;
       html += `
         <button class="op" data-act="op" data-arg="${cur}|${operations[cur].indexOf(op)}">
-          <div class="ico ${plus ? "in" : ""}">${icon(op.icon)}</div>
-          <div class="main"><div class="name">${esc(op.name)}</div><div class="sub">${esc(op.cat)} · ${op.time}</div></div>
-          <div class="sum ${plus ? "plus" : ""}">${signed(op.sum, cur)}</div>
+          <div class="ico ${plus ? "in" : ""}"${icoStyle(op)}>${icon(op.icon)}</div>
+          <div class="main"><div class="name">${esc(op.name)}</div>${op.declined
+            ? `<div class="sub declined"><span class="x">✕</span>Ви заборонили такі оплати. Можете змінити в налаштуваннях</div>`
+            : `<div class="sub">${esc(op.period || op.cat)} · ${op.time}</div>`}</div>
+          <div class="sum ${plus ? "plus" : ""} ${op.declined ? "declined" : ""}">${signed(op.sum, cur)}</div>
         </button>`;
     });
     return html;
@@ -733,8 +889,8 @@
     },
     logout() {
       openScreen("Вийти", `
-        <div class="hero"><div class="ico red">${icon("logout")}</div><h2>Вийти з акаунта?</h2><p>У демо-версії вихід повертає на головний екран.</p></div>
-        <button class="btn" data-act="tab" data-arg="cards">Вийти</button>
+        <div class="hero"><div class="ico red">${icon("logout")}</div><h2>Вийти з акаунта?</h2><p>Щоб повернутися, знадобиться ПІН-код.</p></div>
+        <button class="btn" data-act="lock">Вийти</button>
         <button class="btn ghost" data-act="close">Скасувати</button>`);
     },
 
@@ -763,13 +919,15 @@
     stats() {
       const c = cards[current], cur = c.currency, list = operations[cur];
       const byCat = {};
-      list.filter((o) => o.sum < 0).forEach((o) => { byCat[o.cat] = (byCat[o.cat] || 0) - o.sum; });
+      list.filter((o) => o.sum < 0 && !o.declined).forEach((o) => { byCat[o.cat] = (byCat[o.cat] || 0) - o.sum; });
       const rows = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
       const total = rows.reduce((s, r) => s + r[1], 0);
       const max = rows[0] ? rows[0][1] : 1;
       const income = list.filter((o) => o.sum > 0).reduce((s, o) => s + o.sum, 0);
       openScreen("Статистика", `
-        <div class="hero"><p>${c.name} картка · жовтень</p><div class="amount">−${money(total, cur)}</div><p>Витрати · надходження +${money(income, cur)}</p></div>
+        <div class="hero"><p>${c.name} картка</p><div class="amount">−${money(total, cur)}</div><p>Витрати · надходження +${money(income, cur)}</p></div>
+        ${incomeChart(list, cur)}
+        <div class="day">Витрати за категоріями</div>
         <div class="bars">${rows.length ? rows.map(([cat, v]) => `
           <div class="bar-row"><div class="top-line"><span>${esc(cat)}</span><span>${money(v, cur)}</span></div>
           <div class="progress"><span style="width:${Math.max(4, (v / max) * 100)}%"></span></div></div>`).join("") : `<div class="empty">Витрат ще не було</div>`}</div>`);
@@ -909,12 +1067,19 @@
       const [cur, idx] = key.split("|");
       const op = operations[cur][+idx], c = cardOf(cur);
       openScreen("Операція", `
-        <div class="hero"><div class="ico ${op.sum > 0 ? "in" : "red"}">${icon(op.icon)}</div>
-          <h2>${esc(op.name)}</h2><div class="amount" style="${op.sum > 0 ? "color:var(--green)" : ""}">${signed(op.sum, cur)}</div><p>Успішно</p></div>
-        ${kv("Категорія", esc(op.cat))}${kv("Дата", `${op.day}, ${op.time}`)}${kv("Картка", `${c.name} •••• ${c.last4}`)}${kv("Комісія", `0 ${symbols[cur]}`)}
+        <div class="hero"><div class="ico ${op.sum > 0 ? "in" : "red"}"${icoStyle(op)}>${icon(op.icon)}</div>
+          <h2>${esc(op.name)}</h2><div class="amount" style="${op.sum > 0 ? "color:var(--green)" : op.declined ? "color:#e5555c" : ""}">${signed(op.sum, cur)}</div>
+          <p>${op.declined ? "Відхилено: ви заборонили такі оплати" : "Успішно"}</p></div>
+        ${kv("Категорія", esc(op.cat))}${op.period ? kv("Період", op.period) : ""}${kv("Дата", `${op.day}, ${op.time}`)}${kv("Картка", `${c.name} •••• ${c.last4}`)}${kv("Комісія", `0 ${symbols[cur]}`)}
         <div style="height:20px"></div>
-        <button class="btn" data-act="receipt" data-arg="${key}">Квитанція</button>
-        <button class="btn ghost" data-act="${op.sum < 0 ? "transfer" : "topup"}">${op.sum < 0 ? "Новий переказ" : "Поповнити ще"}</button>`);
+        ${op.declined
+          ? `<button class="btn" data-act="allowPayments" data-arg="${esc(op.name)}">Дозволити такі оплати</button>`
+          : `<button class="btn" data-act="receipt" data-arg="${key}">Квитанція</button>
+        <button class="btn ghost" data-act="${op.sum < 0 ? "transfer" : "topup"}">${op.sum < 0 ? "Новий переказ" : "Поповнити ще"}</button>`}`);
+    },
+    allowPayments(name) {
+      closeScreen();
+      toast(`Оплати ${name} знову дозволено`);
     },
     receipt(key) {
       const [cur, idx] = key.split("|");
@@ -924,7 +1089,7 @@
         <div class="hero"><div class="ico red">${icon("receipt")}</div><h2>Квитанція ${no}</h2><p>Nova Bank · демо-документ</p></div>
         <div class="receipt">
           ${kv("Операція", esc(op.name))}${kv("Сума", signed(op.sum, cur))}${kv("Категорія", esc(op.cat))}
-          ${kv("Дата і час", `${op.day}, ${op.time}`)}${kv("Картка", `•••• ${c.last4}`)}${kv("Статус", "Виконано")}
+          ${kv("Дата і час", `${op.day}, ${op.time}`)}${kv("Картка", `•••• ${c.last4}`)}${kv("Статус", op.declined ? "Відхилено" : "Виконано")}
         </div>
         <button class="btn ghost" data-act="close">Закрити</button>`);
     },
@@ -1193,6 +1358,23 @@
     },
   };
 
+  // Monthly income as a bar chart (oldest month on the left).
+  function incomeChart(list, cur) {
+    const months = list.filter((o) => o.cat === "Дохід" && o.period).reverse();
+    if (!months.length) return "";
+    const total = months.reduce((s, o) => s + o.sum, 0);
+    const max = Math.max(...months.map((o) => o.sum));
+    return `
+      <div class="day">Дохід по місяцях</div>
+      <div class="chart" role="img" aria-label="Дохід по місяцях, разом ${money(total, cur)}">
+        ${months.map((o) => `<div class="col" title="${o.period}: ${money(o.sum, cur)}">
+          <span class="v">${(o.sum / 1000).toFixed(1)}k</span>
+          <span class="b" style="height:${Math.round(o.sum / max * 100)}%"></span>
+          <span class="m">${o.period.slice(0, 3)}</span></div>`).join("")}
+      </div>
+      ${kv("Дохід за 12 місяців", `<strong>${money(total, cur)}</strong>`)}${kv("Середній за місяць", money(Math.round(total / months.length), cur))}`;
+  }
+
   function languageHtml() {
     return [["uk", "Українська"], ["en", "English"]].map(([k, t]) => `
       <button class="row-btn" data-act="setLang" data-arg="${k}"><div class="main"><div class="name">${t}</div></div>
@@ -1322,6 +1504,72 @@
   if ("serviceWorker" in navigator && location.protocol === "https:") {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
+
+  // ---------- PIN lock ----------
+  const PIN = "1040";
+  const lockEl = $("#lock"), dotsPin = $("#pin-dots"), lockSub = $("#lock-sub");
+  let entered = "", hiddenAt = 0;
+  function drawPin() {
+    [...dotsPin.children].forEach((d, i) => d.classList.toggle("on", i < entered.length));
+  }
+  function unlock() {
+    dotsPin.classList.add("ok");
+    setTimeout(() => {
+      lockEl.classList.add("out");
+      setTimeout(() => { lockEl.hidden = true; }, 250);
+    }, 200);
+  }
+  function lock() {
+    closeAll();
+    acts.tab("cards");
+    entered = "";
+    drawPin();
+    dotsPin.classList.remove("ok");
+    lockSub.textContent = "Уведіть ПІН-код";
+    lockSub.className = "lock-sub";
+    lockEl.hidden = false;
+    lockEl.classList.remove("out");
+  }
+  acts.lock = lock;
+  function pressKey(k) {
+    if (lockEl.hidden) return;
+    if (k === "del") { entered = entered.slice(0, -1); drawPin(); return; }
+    if (k === "face") {
+      if (!settings.faceid) { lockSub.textContent = "Face ID вимкнено в налаштуваннях"; return; }
+      lockSub.innerHTML = '<span class="scan">Face ID…</span>';
+      setTimeout(unlock, 700);
+      return;
+    }
+    if (entered.length >= 4) return;
+    entered += k;
+    drawPin();
+    lockSub.textContent = "Уведіть ПІН-код";
+    lockSub.className = "lock-sub";
+    if (entered.length < 4) return;
+    if (entered === PIN) { setTimeout(unlock, 120); return; }
+    setTimeout(() => {
+      dotsPin.classList.add("shake");
+      lockSub.textContent = "Невірний ПІН-код. Спробуйте ще раз";
+      lockSub.className = "lock-sub bad";
+      if (navigator.vibrate) navigator.vibrate(120);
+      setTimeout(() => { dotsPin.classList.remove("shake"); entered = ""; drawPin(); }, 400);
+    }, 150);
+  }
+  lockEl.querySelectorAll("[data-key]").forEach((b) => b.addEventListener("click", () => pressKey(b.dataset.key)));
+  document.addEventListener("keydown", (e) => {
+    if (lockEl.hidden) return;
+    if (/^[0-9]$/.test(e.key)) pressKey(e.key);
+    else if (e.key === "Backspace") pressKey("del");
+  });
+  $("#forgot").addEventListener("click", () => {
+    lockSub.textContent = "Демо-версія: ПІН-код 1040";
+    lockSub.className = "lock-sub";
+  });
+  // Like a real banking app: ask for the PIN again after a minute in the background.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hiddenAt = Date.now();
+    else if (hiddenAt && Date.now() - hiddenAt > 60000 && lockEl.hidden) lock();
+  });
 
   // Start on the USD card.
   show(current);
