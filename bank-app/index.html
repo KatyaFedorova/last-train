@@ -3,27 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1c3346">
+<meta name="theme-color" content="#c8102e">
 <title>Nova Bank</title>
 <style>
   :root {
-    --bg-top: #18303f;
-    --bg-mid: #2b5670;
-    --bg-bottom: #b9cad8;
+    --bg-top: #9e0b22;
+    --bg-mid: #d6142f;
+    --bg-bottom: #ffffff;
     --ink: #ffffff;
-    --dark: #1b2024;
+    --dark: #d6142f;
     --sheet: #ffffff;
     --text: #111417;
     --muted: #8a94a0;
     --accent: #e8434b;
-    --green: #4cc56a;
-    --pill: rgba(255, 255, 255, 0.16);
+    --green: #ffffff;
+    --pill: rgba(255, 255, 255, 0.7);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    background: #0e1820;
+    background: #7a0919;
     color: var(--ink);
     display: flex;
     justify-content: center;
@@ -36,7 +36,7 @@
     width: 100%;
     max-width: 460px;
     min-height: 100vh;
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 30%, #5e8aa3 55%, var(--bg-bottom) 75%, #dfe7ee 100%);
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 30%, #ef6b7b 52%, #fde6e9 68%, var(--bg-bottom) 80%, #ffffff 100%);
     overflow-x: hidden;
     padding-bottom: 120px;
   }
@@ -50,7 +50,7 @@
   }
   .avatar {
     width: 42px; height: 42px; border-radius: 50%;
-    background: #f2c140; color: #fff;
+    background: #fff; color: #c8102e;
     display: grid; place-items: center;
     font-weight: 600; font-size: 15px;
   }
@@ -58,11 +58,11 @@
   .badge {
     position: absolute; top: -8px; right: -10px;
     min-width: 19px; height: 19px; border-radius: 10px;
-    background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+    background: #fff; color: var(--accent); font-size: 11px; font-weight: 700;
     display: grid; place-items: center; padding: 0 5px;
     border: 2px solid var(--bg-top);
   }
-  .dot { position: absolute; top: -3px; right: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); }
+  .dot { position: absolute; top: -3px; right: -4px; width: 11px; height: 11px; border-radius: 50%; background: #fff; }
   .spacer { flex: 1; }
   .cashback { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; }
   .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.18); }
@@ -96,8 +96,8 @@
     aspect-ratio: 2.2 / 1;
     border-radius: 18px;
     padding: 16px 20px;
-    background: linear-gradient(160deg, #2a3036, #15191c);
-    color: #c5ccd2;
+    background: linear-gradient(160deg, #e8253f, #a50d24);
+    color: #ffe3e6;
     position: relative;
     transform: rotateX(38deg);
     transform-origin: center bottom;
@@ -105,8 +105,8 @@
     transition: transform 0.3s;
     user-select: none;
   }
-  .card.light { background: linear-gradient(160deg, #fafafa, #dcdfe2); color: #3a4148; --edge: #c9ced3; }
-  .card.red { background: linear-gradient(160deg, #e2525a, #a92a32); color: #ffe2e3; --edge: #7b1d23; }
+  .card.light { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; }
+  .card.red { background: linear-gradient(160deg, #ffffff, #f1e3e5); color: #c8102e; --edge: #e9b7be; }
   .card .row { display: flex; justify-content: space-between; align-items: center; }
   .card .brand { font-weight: 800; font-style: italic; letter-spacing: 0.5px; font-size: 15px; }
   .card .cur { font-size: 12px; letter-spacing: 1px; opacity: 0.8; }
@@ -120,7 +120,7 @@
     display: flex; align-items: center; gap: 10px;
     margin: -14px auto 0; padding: 8px 20px;
     background: var(--pill); border-radius: 20px;
-    font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9);
+    font-size: 15px; font-weight: 500; color: #c8102e;
   }
 
   /* Actions */
@@ -129,6 +129,7 @@
     padding: 30px 12px 0;
   }
   .action { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: var(--text); }
+  .action .circle { box-shadow: 0 6px 16px rgba(214, 20, 47, 0.3); }
   .action .circle {
     width: 64px; height: 64px; border-radius: 50%;
     background: var(--dark); display: grid; place-items: center;
@@ -149,7 +150,7 @@
   .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .sheet-head h2 { font-size: 20px; font-weight: 700; }
   .see-all {
-    background: #e9eef2; color: #3d4a57; border-radius: 16px;
+    background: #fde6e9; color: #c8102e; border-radius: 16px;
     padding: 6px 14px; font-size: 14px; font-weight: 500;
     display: flex; align-items: center; gap: 4px;
   }
@@ -191,7 +192,7 @@
   <header class="top">
     <button class="avatar" id="avatar">КФ</button>
     <button class="icon-btn" aria-label="Чат">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/><path d="M8 13.5c1.8 2 6.2 2 8 0" stroke="#2b5670" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/><path d="M8 13.5c1.8 2 6.2 2 8 0" stroke="#d6142f" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
       <span class="badge">2</span>
     </button>
     <div class="spacer"></div>
@@ -204,16 +205,16 @@
     </button>
     <span class="divider"></span>
     <button class="icon-btn" aria-label="Профіль">
-      <svg width="34" height="30" viewBox="0 0 34 30" fill="#fff"><path d="M4 2l7 6h12l7-6v14c0 7-6 12-13 12S4 23 4 16Z"/><circle cx="12" cy="15" r="3" fill="#2b5670"/><circle cx="22" cy="15" r="3" fill="#2b5670"/><path d="M15 21h4l-2 2Z" fill="#2b5670"/></svg>
+      <svg width="34" height="30" viewBox="0 0 34 30" fill="#fff"><path d="M4 2l7 6h12l7-6v14c0 7-6 12-13 12S4 23 4 16Z"/><circle cx="12" cy="15" r="3" fill="#d6142f"/><circle cx="22" cy="15" r="3" fill="#d6142f"/><path d="M15 21h4l-2 2Z" fill="#d6142f"/></svg>
     </button>
     <button class="icon-btn" aria-label="Статистика">
-      <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><path d="M7.5 17V11M12 17V7M16.5 17v-4" stroke="#2b5670" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><path d="M7.5 17V11M12 17V7M16.5 17v-4" stroke="#d6142f" stroke-width="2.4" stroke-linecap="round"/></svg>
     </button>
   </header>
 
   <section class="balance">
     <button class="add" aria-label="Поповнити">
-      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.5)"/><path d="M12 7v10M7 12h10" stroke="#2b5670" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.5)"/><path d="M12 7v10M7 12h10" stroke="#d6142f" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <div class="amount" id="balance"></div>
   </section>
@@ -222,26 +223,26 @@
 
   <div style="display:flex">
     <button class="all-cards">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><rect x="3" y="7" width="16" height="12" rx="3"/><rect x="6" y="4" width="15" height="11" rx="3" opacity="0.6"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#c8102e"><rect x="3" y="7" width="16" height="12" rx="3"/><rect x="6" y="4" width="15" height="11" rx="3" opacity="0.6"/></svg>
       Усі картки
     </button>
   </div>
 
   <nav class="actions">
     <button class="action" data-msg="Переказ на картку">
-      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#d6ecff"/><rect x="2" y="9" width="20" height="2" fill="#1b2024"/></svg></div>
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#ffffff"/><rect x="2" y="9" width="20" height="2" fill="#d6142f"/></svg></div>
       <span>Переказати<br>на картку</span>
     </button>
     <button class="action" data-msg="Платіж за IBAN">
-      <div class="circle"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M5 2h10l5 5v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" fill="#d6ecff"/><path d="M15 2v5h5" fill="#1b2024"/><path d="M7 12h6M7 16h9" stroke="#1b2024" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div class="circle"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M5 2h10l5 5v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" fill="#ffffff"/><path d="M15 2v5h5" fill="#d6142f"/><path d="M7 12h6M7 16h9" stroke="#d6142f" stroke-width="2" stroke-linecap="round"/></svg></div>
       <span>Платіж<br>за IBAN</span>
     </button>
     <button class="action" data-msg="Купити долари">
-      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#d6ecff"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" fill="#1b2024" font-family="Arial">$</text></svg></div>
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ffffff"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" fill="#d6142f" font-family="Arial">$</text></svg></div>
       <span>Купити<br>долари</span>
     </button>
     <button class="action" data-msg="Інші платежі">
-      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d6ecff" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5Z" fill="#d6ecff"/><path d="m2 12 10 5 10-5M2 16l10 5 10-5"/></svg></div>
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5Z" fill="#ffffff"/><path d="m2 12 10 5 10-5M2 16l10 5 10-5"/></svg></div>
       <span>Інші<br>платежі</span>
     </button>
   </nav>
@@ -294,17 +295,17 @@
 
   const operations = {
     USD: [
-      { name: "Frestive Perenenan", sub: "Продукти", sum: -24, color: "linear-gradient(135deg,#f06a2c,#f0a24a)", icon: "apple" },
-      { name: "Hilo Donut Seseh",   sub: "Кафе",     sum: -4,  color: "linear-gradient(135deg,#7a3ff0,#a160f5)", icon: "fork" },
-      { name: "Поповнення",          sub: "З картки UAH", sum: 500, color: "linear-gradient(135deg,#2fb36a,#5fd18b)", icon: "plus" },
-      { name: "Uber Trip",           sub: "Таксі",    sum: -12, color: "linear-gradient(135deg,#2d6cdf,#58a0f2)", icon: "car" },
+      { name: "Frestive Perenenan", sub: "Продукти", sum: -24, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "apple" },
+      { name: "Hilo Donut Seseh",   sub: "Кафе",     sum: -4,  color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "fork" },
+      { name: "Поповнення",          sub: "З картки UAH", sum: 500, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "plus" },
+      { name: "Uber Trip",           sub: "Таксі",    sum: -12, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "car" },
     ],
     UAH: [
-      { name: "Сільпо", sub: "Продукти", sum: -842, color: "linear-gradient(135deg,#f06a2c,#f0a24a)", icon: "apple" },
-      { name: "Kyivstar", sub: "Мобільний", sum: -250, color: "linear-gradient(135deg,#2d6cdf,#58a0f2)", icon: "phone" },
+      { name: "Сільпо", sub: "Продукти", sum: -842, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "apple" },
+      { name: "Kyivstar", sub: "Мобільний", sum: -250, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "phone" },
     ],
     EUR: [
-      { name: "Netflix", sub: "Підписки", sum: -11, color: "linear-gradient(135deg,#e2525a,#f07b80)", icon: "play" },
+      { name: "Netflix", sub: "Підписки", sum: -11, color: "linear-gradient(135deg,#d6142f,#f0566b)", icon: "play" },
     ],
   };
 
