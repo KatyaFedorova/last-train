@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c3346">
+<title>Nova Bank</title>
+<style>
+  :root {
+    --bg-top: #18303f;
+    --bg-mid: #2b5670;
+    --bg-bottom: #b9cad8;
+    --ink: #ffffff;
+    --dark: #1b2024;
+    --sheet: #ffffff;
+    --text: #111417;
+    --muted: #8a94a0;
+    --accent: #e8434b;
+    --green: #4cc56a;
+    --pill: rgba(255, 255, 255, 0.16);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: #0e1820;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  svg { display: block; }
+
+  .app {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 30%, #5e8aa3 55%, var(--bg-bottom) 75%, #dfe7ee 100%);
+    overflow-x: hidden;
+    padding-bottom: 120px;
+  }
+
+  /* Header */
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: calc(env(safe-area-inset-top) + 24px) 18px 0;
+  }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #f2c140; color: #fff;
+    display: grid; place-items: center;
+    font-weight: 600; font-size: 15px;
+  }
+  .icon-btn { position: relative; width: 32px; height: 32px; display: grid; place-items: center; }
+  .badge {
+    position: absolute; top: -8px; right: -10px;
+    min-width: 19px; height: 19px; border-radius: 10px;
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+    display: grid; place-items: center; padding: 0 5px;
+    border: 2px solid var(--bg-top);
+  }
+  .dot { position: absolute; top: -3px; right: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); }
+  .spacer { flex: 1; }
+  .cashback { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; }
+  .divider { width: 1px; height: 28px; background: rgba(255,255,255,0.18); }
+
+  /* Balance */
+  .balance {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    margin-top: 110px;
+  }
+  .balance .add {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); display: grid; place-items: center;
+  }
+  .balance .amount { font-size: 50px; font-weight: 700; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+
+  /* Cards carousel */
+  .cards {
+    margin-top: 70px;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 20px 10% 60px;
+    scrollbar-width: none;
+    perspective: 900px;
+  }
+  .cards::-webkit-scrollbar { display: none; }
+  .card {
+    flex: 0 0 80%;
+    scroll-snap-align: center;
+    aspect-ratio: 2.2 / 1;
+    border-radius: 18px;
+    padding: 16px 20px;
+    background: linear-gradient(160deg, #2a3036, #15191c);
+    color: #c5ccd2;
+    position: relative;
+    transform: rotateX(38deg);
+    transform-origin: center bottom;
+    box-shadow: 0 6px 0 var(--edge, var(--green)), 0 30px 40px rgba(0,0,0,0.25);
+    transition: transform 0.3s;
+    user-select: none;
+  }
+  .card.light { background: linear-gradient(160deg, #fafafa, #dcdfe2); color: #3a4148; --edge: #c9ced3; }
+  .card.red { background: linear-gradient(160deg, #e2525a, #a92a32); color: #ffe2e3; --edge: #7b1d23; }
+  .card .row { display: flex; justify-content: space-between; align-items: center; }
+  .card .brand { font-weight: 800; font-style: italic; letter-spacing: 0.5px; font-size: 15px; }
+  .card .cur { font-size: 12px; letter-spacing: 1px; opacity: 0.8; }
+  .card .num {
+    margin-top: 18px; font-family: "Courier New", monospace; font-size: 17px; letter-spacing: 2px;
+    display: flex; justify-content: space-between;
+  }
+  .card .net { position: absolute; right: 20px; bottom: 14px; font-weight: 900; font-style: italic; font-size: 20px; letter-spacing: 1px; }
+
+  .all-cards {
+    display: flex; align-items: center; gap: 10px;
+    margin: -14px auto 0; padding: 8px 20px;
+    background: var(--pill); border-radius: 20px;
+    font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9);
+  }
+
+  /* Actions */
+  .actions {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    padding: 30px 12px 0;
+  }
+  .action { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: var(--text); }
+  .action .circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--dark); display: grid; place-items: center;
+    transition: transform 0.15s;
+  }
+  .action:active .circle { transform: scale(0.92); }
+  .action span { font-size: 13px; line-height: 1.25; font-weight: 500; }
+
+  /* Operations sheet */
+  .sheet {
+    margin: 22px 18px 0;
+    background: var(--sheet);
+    color: var(--text);
+    border-radius: 28px;
+    padding: 22px 18px 10px;
+    box-shadow: 0 -2px 30px rgba(0,0,0,0.05);
+  }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .sheet-head h2 { font-size: 20px; font-weight: 700; }
+  .see-all {
+    background: #e9eef2; color: #3d4a57; border-radius: 16px;
+    padding: 6px 14px; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .op { display: flex; align-items: center; gap: 18px; padding: 14px 0; }
+  .op .ico { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+  .op .name { flex: 1; font-size: 16px; font-weight: 500; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .op .sub { font-size: 12px; color: var(--muted); text-transform: none; margin-top: 2px; }
+  .op .sum { font-size: 17px; font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .op .sum.plus { color: #2e9e4f; }
+
+  /* Bottom nav */
+  .nav {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom) + 14px);
+    left: 50%; transform: translateX(-50%);
+    width: calc(100% - 28px); max-width: 432px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .tabs, .market {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .tabs { flex: 1; display: flex; justify-content: space-around; border-radius: 34px; padding: 8px 4px; }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #9aa2a9; font-size: 11px; font-weight: 500; padding: 4px 6px; }
+  .tab.active { color: var(--accent); }
+  .market { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #9aa2a9; font-size: 11px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 110px; transform: translate(-50%, 20px);
+    background: rgba(20,24,28,0.92); color: #fff; padding: 10px 18px; border-radius: 14px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: all 0.25s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <button class="avatar" id="avatar">КФ</button>
+    <button class="icon-btn" aria-label="Чат">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/><path d="M8 13.5c1.8 2 6.2 2 8 0" stroke="#2b5670" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      <span class="badge">2</span>
+    </button>
+    <div class="spacer"></div>
+    <button class="cashback" aria-label="Кешбек">
+      <span class="icon-btn">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M3 9h18v4H3zM4 13h7v8H4zM13 13h7v8h-7zM11 9h2v12h-2z"/><path d="M12 9C9 9 7 7.5 7.5 6S10.5 5 12 9Zm0 0c3 0 5-1.5 4.5-3S13.5 5 12 9Z"/></svg>
+        <span class="dot"></span>
+      </span>
+      <span id="cashback">233 ₴</span>
+    </button>
+    <span class="divider"></span>
+    <button class="icon-btn" aria-label="Профіль">
+      <svg width="34" height="30" viewBox="0 0 34 30" fill="#fff"><path d="M4 2l7 6h12l7-6v14c0 7-6 12-13 12S4 23 4 16Z"/><circle cx="12" cy="15" r="3" fill="#2b5670"/><circle cx="22" cy="15" r="3" fill="#2b5670"/><path d="M15 21h4l-2 2Z" fill="#2b5670"/></svg>
+    </button>
+    <button class="icon-btn" aria-label="Статистика">
+      <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="5" fill="#fff"/><path d="M7.5 17V11M12 17V7M16.5 17v-4" stroke="#2b5670" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <section class="balance">
+    <button class="add" aria-label="Поповнити">
+      <svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.5)"/><path d="M12 7v10M7 12h10" stroke="#2b5670" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="amount" id="balance"></div>
+  </section>
+
+  <div class="cards" id="cards"></div>
+
+  <div style="display:flex">
+    <button class="all-cards">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><rect x="3" y="7" width="16" height="12" rx="3"/><rect x="6" y="4" width="15" height="11" rx="3" opacity="0.6"/></svg>
+      Усі картки
+    </button>
+  </div>
+
+  <nav class="actions">
+    <button class="action" data-msg="Переказ на картку">
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#d6ecff"/><rect x="2" y="9" width="20" height="2" fill="#1b2024"/></svg></div>
+      <span>Переказати<br>на картку</span>
+    </button>
+    <button class="action" data-msg="Платіж за IBAN">
+      <div class="circle"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M5 2h10l5 5v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" fill="#d6ecff"/><path d="M15 2v5h5" fill="#1b2024"/><path d="M7 12h6M7 16h9" stroke="#1b2024" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <span>Платіж<br>за IBAN</span>
+    </button>
+    <button class="action" data-msg="Купити долари">
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#d6ecff"/><text x="12" y="17" text-anchor="middle" font-size="14" font-weight="800" fill="#1b2024" font-family="Arial">$</text></svg></div>
+      <span>Купити<br>долари</span>
+    </button>
+    <button class="action" data-msg="Інші платежі">
+      <div class="circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d6ecff" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5Z" fill="#d6ecff"/><path d="m2 12 10 5 10-5M2 16l10 5 10-5"/></svg></div>
+      <span>Інші<br>платежі</span>
+    </button>
+  </nav>
+
+  <section class="sheet">
+    <div class="sheet-head">
+      <h2>Операції</h2>
+      <button class="see-all">Усі <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 5 7 7-7 7"/></svg></button>
+    </div>
+    <div id="ops"></div>
+  </section>
+
+  <div class="nav">
+    <div class="tabs" id="tabs">
+      <button class="tab active">
+        <svg width="30" height="26" viewBox="0 0 30 26"><rect x="1" y="2" width="22" height="15" rx="4" fill="currentColor" opacity="0.55"/><rect x="6" y="8" width="22" height="15" rx="4" fill="currentColor"/><rect x="6" y="12" width="22" height="3" fill="#fff" opacity="0.7"/></svg>
+        Картки
+      </button>
+      <button class="tab">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M11 2.05A10 10 0 1 0 21.95 13H11Z"/><path d="M13 1v10h10A10 10 0 0 0 13 1Z" opacity="0.7"/></svg>
+        Кредити
+      </button>
+      <button class="tab">
+        <svg width="26" height="26" viewBox="0 0 24 24"><rect x="1" y="2" width="22" height="20" rx="5" fill="currentColor"/><circle cx="13" cy="12" r="6" fill="#fff"/><text x="13" y="15" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor" font-family="Arial">16</text><rect x="4" y="8" width="2" height="8" rx="1" fill="#fff"/></svg>
+        Накопичення
+      </button>
+      <button class="tab">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="4.5"/><circle cx="18" cy="6" r="4.5"/><circle cx="6" cy="18" r="4.5"/><circle cx="18" cy="18" r="4.5"/></svg>
+        Ще
+      </button>
+    </div>
+    <button class="market">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h16l-1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2Z"/><path d="M8 9V6a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Маркет
+    </button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  // Demo data — edit freely.
+  const cards = [
+    { style: "light", currency: "UAH", last4: "8820", network: "VISA" },
+    { style: "", currency: "USD", last4: "5116", network: "VISA", balance: 13417 },
+    { style: "red", currency: "EUR", last4: "3047", network: "MC" },
+  ];
+  const balances = { UAH: 48250, USD: 13417, EUR: 2140 };
+  const symbols = { UAH: "₴", USD: "$", EUR: "€" };
+
+  const operations = {
+    USD: [
+      { name: "Frestive Perenenan", sub: "Продукти", sum: -24, color: "linear-gradient(135deg,#f06a2c,#f0a24a)", icon: "apple" },
+      { name: "Hilo Donut Seseh",   sub: "Кафе",     sum: -4,  color: "linear-gradient(135deg,#7a3ff0,#a160f5)", icon: "fork" },
+      { name: "Поповнення",          sub: "З картки UAH", sum: 500, color: "linear-gradient(135deg,#2fb36a,#5fd18b)", icon: "plus" },
+      { name: "Uber Trip",           sub: "Таксі",    sum: -12, color: "linear-gradient(135deg,#2d6cdf,#58a0f2)", icon: "car" },
+    ],
+    UAH: [
+      { name: "Сільпо", sub: "Продукти", sum: -842, color: "linear-gradient(135deg,#f06a2c,#f0a24a)", icon: "apple" },
+      { name: "Kyivstar", sub: "Мобільний", sum: -250, color: "linear-gradient(135deg,#2d6cdf,#58a0f2)", icon: "phone" },
+    ],
+    EUR: [
+      { name: "Netflix", sub: "Підписки", sum: -11, color: "linear-gradient(135deg,#e2525a,#f07b80)", icon: "play" },
+    ],
+  };
+
+  const icons = {
+    apple: '<path d="M12 7c-2-2-7-1.5-7 4 0 5 3 10 7 9 4 1 7-4 7-9 0-5.5-5-6-7-4Z" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 7c0-2 1-4 3-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    fork: '<path d="M8 3v8M5 3v5a3 3 0 0 0 6 0V3M8 11v10M16 21V3c-2 1-3 4-3 8h3" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    plus: '<path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
+    car: '<path d="M4 16v-4l2-5h12l2 5v4ZM4 16v2M20 16v2" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="8" cy="13" r="1.3" fill="#fff"/><circle cx="16" cy="13" r="1.3" fill="#fff"/>',
+    phone: '<rect x="7" y="2" width="10" height="20" rx="2.5" stroke="#fff" stroke-width="1.8" fill="none"/><path d="M11 18h2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+    play: '<path d="M8 5v14l11-7Z" fill="#fff"/>',
+  };
+
+  const fmt = (n) => Math.abs(n).toLocaleString("uk-UA").replace(/,/g, " ");
+
+  const cardsEl = document.getElementById("cards");
+  cardsEl.innerHTML = cards.map((c, i) => `
+    <div class="card ${c.style}" data-i="${i}">
+      <div class="row"><span class="brand">nova</span><span class="cur">${c.currency}</span></div>
+      <div class="num"><span>4441</span><span>****</span><span>****</span><span>${c.last4}</span></div>
+      <span class="net">${c.network}</span>
+    </div>`).join("");
+
+  function show(i) {
+    const c = cards[i];
+    document.getElementById("balance").textContent = `${fmt(balances[c.currency])} ${symbols[c.currency]}`;
+    document.getElementById("ops").innerHTML = (operations[c.currency] || []).map(op => `
+      <div class="op">
+        <div class="ico" style="background:${op.color}"><svg width="24" height="24" viewBox="0 0 24 24">${icons[op.icon]}</svg></div>
+        <div class="name">${op.name}<div class="sub">${op.sub}</div></div>
+        <div class="sum ${op.sum > 0 ? "plus" : ""}">${op.sum > 0 ? "+" : "-"}${fmt(op.sum)} ${symbols[c.currency]}</div>
+      </div>`).join("");
+  }
+
+  // Track which card is centered in the carousel.
+  let current = -1;
+  function onScroll() {
+    const mid = cardsEl.scrollLeft + cardsEl.clientWidth / 2;
+    let best = 0, bestD = Infinity;
+    [...cardsEl.children].forEach((el, i) => {
+      const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - mid);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    if (best !== current) { current = best; show(best); }
+  }
+  cardsEl.addEventListener("scroll", onScroll, { passive: true });
+
+  // Start on the USD card, like the reference screen.
+  requestAnimationFrame(() => {
+    const el = cardsEl.children[1];
+    cardsEl.scrollLeft = el.offsetLeft - (cardsEl.clientWidth - el.offsetWidth) / 2;
+    onScroll();
+  });
+
+  const toast = document.getElementById("toast");
+  let t;
+  function say(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(t);
+    t = setTimeout(() => toast.classList.remove("show"), 1600);
+  }
+  document.querySelectorAll(".action").forEach(b => b.addEventListener("click", () => say(b.dataset.msg)));
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    say(b.textContent.trim());
+  }));
+</script>
+</body>
+</html>
