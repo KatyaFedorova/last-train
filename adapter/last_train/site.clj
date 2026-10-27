@@ -11,7 +11,8 @@
 (def ^:private core-files ["logic" "english" "game" "puzzles" "terminal"])
 
 (defn build!
-  "Fresh build/site/: the web/ page plus the shared .cljc game core."
+  "Fresh build/site/: the web/ page plus the shared .cljc game core,
+  and the Nova Bank demo app under bank/."
   []
   (fs/delete-tree site-dir)
   (fs/create-dirs (fs/path site-dir "last_train"))
@@ -19,11 +20,14 @@
     (fs/copy file (fs/path site-dir (fs/file-name file))))
   (doseq [file core-files]
     (fs/copy (str "src/last_train/" file ".cljc") (fs/path site-dir "last_train" (str file ".cljc"))))
+  (fs/copy-tree "bank-app" (fs/path site-dir "bank"))
   site-dir)
 
 (def ^:private content-types
   {"html" "text/html; charset=utf-8" "css" "text/css; charset=utf-8"
-   "cljs" "text/plain; charset=utf-8" "cljc" "text/plain; charset=utf-8"})
+   "cljs" "text/plain; charset=utf-8" "cljc" "text/plain; charset=utf-8"
+   "js" "text/javascript; charset=utf-8" "png" "image/png"
+   "webmanifest" "application/manifest+json"})
 
 (defn- handle [{:keys [uri]}]
   (let [path (str/replace (if (str/ends-with? uri "/") (str uri "index.html") uri) #"^/+" "")
