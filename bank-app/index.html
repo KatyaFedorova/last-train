@@ -546,6 +546,8 @@
     "Інше": "linear-gradient(135deg,#6f8790,#9db0b7)",
     "Дохід": "linear-gradient(135deg,#17924d,#3fbf74)",
     "Мобільний": "linear-gradient(135deg,#2d6cdf,#58a0f2)",
+    "Таксі": "linear-gradient(135deg,#e9a417,#f5c64a)",
+    "Здоровʼя": "linear-gradient(135deg,#119c9c,#3cc4bd)",
   };
   const icoStyle = (op) => catColors[op.cat] ? ` style="background:${catColors[op.cat]};color:#fff"` : "";
 
@@ -580,18 +582,6 @@
       D("14 жовтня", "17:33", "PEPITO MARKET PELIATAN", "Продукти", -21, "cart"),
       D("13 жовтня", "14:02", "AIRBNB", "Подорожі", -28, "home"),
       D("13 жовтня", "09:41", "OPEN HOUSE CAFE UBUD", "Кафе та ресторани", -7, "fork"),
-      INCOME("30 вересня", "вересень 2026", 6741),
-      INCOME("31 серпня", "серпень 2026", 6812),
-      INCOME("31 липня", "липень 2026", 6654),
-      INCOME("30 червня", "червень 2026", 6721),
-      INCOME("31 травня", "травень 2026", 6583),
-      INCOME("30 квітня", "квітень 2026", 5379),
-      INCOME("31 березня", "березень 2026", 5264),
-      INCOME("28 лютого", "лютий 2026", 5316),
-      INCOME("31 січня", "січень 2026", 5418),
-      INCOME("31 грудня 2025", "грудень 2025", 5192),
-      INCOME("30 листопада 2025", "листопад 2025", 5347),
-      INCOME("31 жовтня 2025", "жовтень 2025", 5283),
     ],
     UAH: [
       { day: "Сьогодні", time: "09:30", name: "Сільпо",   cat: "Продукти",    sum: -842,  icon: "cart" },
@@ -602,6 +592,53 @@
       { day: "25 жовтня", time: "10:00", name: "Netflix", cat: "Підписки", sum: -11, icon: "play" },
     ],
   };
+
+  // Earlier months: monthly income plus everyday spending, generated from a fixed seed
+  // so the list looks the same every time the app opens.
+  function buildHistory() {
+    const income = { "2025-9": 5283, "2025-10": 5347, "2025-11": 5192, "2026-0": 5418, "2026-1": 5316, "2026-2": 5264,
+      "2026-3": 5379, "2026-4": 6583, "2026-5": 6721, "2026-6": 6654, "2026-7": 6812, "2026-8": 6741 };
+    const monthsOf = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+    const monthNames = ["січень", "лютий", "березень", "квітень", "травень", "червень", "липень", "серпень", "вересень", "жовтень", "листопад", "грудень"];
+    const places = [
+      ["PEPITO MARKET PELIATAN", "Продукти", "cart", 8, 45], ["COCO MART UBUD", "Продукти", "cart", 3, 25],
+      ["INDOMARET", "Продукти", "cart", 1, 12], ["FRESTIVE PERENENAN", "Продукти", "cart", 10, 35],
+      ["BALI BUDA RENON", "Продукти", "cart", 2, 15], ["HILO DONUT SESEH", "Кафе та ресторани", "fork", 3, 14],
+      ["OPEN HOUSE CAFE SESEH", "Кафе та ресторани", "fork", 5, 15], ["SISTERFIELDS CANGGU", "Кафе та ресторани", "fork", 12, 30],
+      ["CRATE CAFE", "Кафе та ресторани", "fork", 6, 18], ["THE GENERAL", "Кафе та ресторани", "fork", 5, 12],
+      ["TROPICAL NOMAD HO", "Кафе та ресторани", "fork", 4, 10], ["GRAB* TRANSPORT", "Таксі", "car", 2, 12],
+      ["GOJEK", "Таксі", "car", 1, 8], ["AIRBNB", "Подорожі", "home", 25, 180],
+      ["GUARDIAN PHARMACY", "Здоровʼя", "heart", 4, 30], ["UNIQLO", "Покупки", "bag", 20, 70],
+      ["SUNSET EYEWEAR CANGGU", "Покупки", "heart", 10, 40], ["ACE HARDWARE", "Ремонт", "tool", 5, 25],
+      ["TELKOMSEL", "Мобільний", "phone", 5, 15],
+    ];
+    let seed = 20261027;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    const pick = (a) => a[Math.floor(rnd() * a.length)];
+    const time = () => `${String(8 + Math.floor(rnd() * 14)).padStart(2, "0")}:${String(Math.floor(rnd() * 60)).padStart(2, "0")}`;
+    const out = [];
+    // October 2026 (days 1-12; later days are in the list above), then September 2026 back to October 2025.
+    for (let i = 0; i < 13; i++) {
+      const y = i <= 9 ? 2026 : 2025, m = (9 - i + 12) % 12;
+      const label = (d) => `${d} ${monthsOf[m]}${y === 2025 ? " 2025" : ""}`;
+      const lastDay = new Date(y, m + 1, 0).getDate();
+      const maxDay = i === 0 ? 12 : lastDay;
+      const ops = [];
+      if (income[`${y}-${m}`]) ops.push({ d: lastDay, op: INCOME(label(lastDay), `${monthNames[m]} ${y}`, income[`${y}-${m}`]) });
+      if (maxDay >= 15) ops.push({ d: 15, op: D(label(15), "09:00", "LinkedIn", "Підписки", -28, "user") });
+      ops.push({ d: 3, op: D(label(3), "06:12", "Spotify", "Підписки", -6, "play") });
+      const count = 4 + Math.floor(rnd() * 4);
+      for (let k = 0; k < count; k++) {
+        const [name, cat, ic, lo, hi] = pick(places);
+        const d = 1 + Math.floor(rnd() * Math.min(maxDay, 28));
+        ops.push({ d, op: D(label(d), time(), name, cat, -Math.round(lo + rnd() * (hi - lo)), ic) });
+      }
+      ops.sort((a, b) => b.d - a.d || b.op.time.localeCompare(a.op.time));
+      out.push(...ops.map((o) => o.op));
+    }
+    return out;
+  }
+  operations.USD.push(...buildHistory());
 
   let cashback = 233;
   const credit = { limit: 50000, used: 0 };
